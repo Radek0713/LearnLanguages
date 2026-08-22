@@ -24,5 +24,25 @@ namespace LearnLanguages.Views.Controls
         {
             InitializeComponent();
         }
+
+        private void btn_calendar_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btn_topics_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btn_flashcards_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btn_tasks_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

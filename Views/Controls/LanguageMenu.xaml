@@ -5,8 +5,33 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LearnLanguages"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="AliceBlue">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="2" Grid.Column="1">
+            <Button x:Name="btn_calendar" Content="Kalendarz" FontFamily="Georgia"
+Background="IndianRed" Foreground="White"
+Margin="10 5" Click="btn_calendar_Click"/>
+            <Button x:Name="btn_topics" Content="Tematy" FontFamily="Georgia"
+Background="IndianRed" Foreground="White"
+Margin="10 5" Click="btn_topics_Click"/>
+            <Button x:Name="btn_flashcards" Content="Fiszki" FontFamily="Georgia"
+Background="IndianRed" Foreground="White"
+Margin="10 5" Click="btn_flashcards_Click"/>
+            <Button x:Name="btn_tasks" Content="Zadania" FontFamily="Georgia"
+Background="IndianRed" Foreground="White"
+Margin="10 5" Click="btn_tasks_Click"/>
+        </StackPanel>
     </Grid>
 </UserControl>
