@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace LearnLanguages
+namespace LearnLanguages.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -19,6 +19,7 @@ namespace LearnLanguages
         public MainWindow()
         {
             InitializeComponent();
+            MainContentArea.Content = new Controls.StartMenu();
         }
     }
 }
