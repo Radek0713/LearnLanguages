@@ -1,0 +1,90 @@
+﻿<UserControl x:Class="LearnLanguages.Views.Controls.TopicsMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Nagłówek -->
+            <RowDefinition Height="*"/>
+            <!-- Główna zawartość (Master-Detail) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Pasek dolny z przyciskiem Wróć -->
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Zarządzanie Tematami" FontSize="24" FontFamily="Georgia" FontWeight="Bold" Foreground="Black" Margin="0,0,0,20"/>
+
+        <!-- Siatka dla Działów (Lewa) i Tematów (Prawa) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <!-- Lewa kolumna zajmuje 1 część -->
+                <ColumnDefinition Width="1*"/>
+                <!-- Prawa kolumna zajmuje 2 części (jest szersza) -->
+            </Grid.ColumnDefinitions>
+
+            <!-- LEWA STRONA: Lista Działów -->
+            <ListBox x:Name="DepartmentsListBox" 
+                     Grid.Column="0" 
+                     FontFamily="Georgia"
+                     Margin="0,0,10,0"
+                     DisplayMemberPath="Name" 
+                     SelectionChanged="DepartmentsListBox_SelectionChanged"
+                     FontSize="16" Padding="5"/>
+
+            <!-- PRAWA STRONA: Lista Tematów -->
+            <!-- ItemsControl to lekka kontrolka do wyświetlania list, gdy chcemy mieć pełną kontrolę nad wyglądem każdego elementu -->
+            <ScrollViewer Grid.Column="1" Margin="10,0,0,0" VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="TopicsItemsControl">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Nazwa tematu -->
+                                    <TextBlock Text="{Binding Name}" FontFamily="Georgia" FontSize="16" VerticalAlignment="Center"/>
+
+                                    <!-- Przycisk "Dodaj". Używamy Tag="{Binding}" aby przekazać cały obiekt Topic do metody Click w C# -->
+                                    <Button Grid.Column="1" Padding="15,5" Tag="{Binding}" Click="AddTopic_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <!-- Domyślny wygląd -->
+                                                <Setter Property="Content" Value="Dodaj do nauki"/>
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Setter Property="Background" Value="MediumSeaGreen"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="FontFamily" Value="Georgia"/>
+
+                                                <!-- Magia WPF: Jeśli właściwość IsSelected w bazie wynosi True, zmień wygląd przycisku! -->
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Content" Value="Już dodane"/>
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                        <Setter Property="Background" Value="LightGray"/>
+                                                        <Setter Property="Foreground" Value="DarkGray"/>
+                                                        <Setter Property="FontFamily" Value="Georgia"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Pasek z przyciskiem Wróć -->
+        <Button Grid.Row="2" Content="Wróć" FontFamily="Georgia" Background="IndianRed" Foreground="White" HorizontalAlignment="Left" Padding="20,10" Margin="10 5" Click="Btn_Back_Click"/>
+    </Grid>
+</UserControl>

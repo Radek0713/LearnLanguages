@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using LearnLanguages.Views.Controls;
 
 namespace LearnLanguages.Views.Controls
 {
@@ -32,7 +33,12 @@ namespace LearnLanguages.Views.Controls
 
         private void btn_topics_Click(object sender, RoutedEventArgs e)
         {
-
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                // Podmień aktualny widok (LanguageMenu) na nowy widok (TopicsMenu)
+                mainWindow.MainContentArea.Content = new TopicsMenu();
+            }
         }
 
         private void btn_flashcards_Click(object sender, RoutedEventArgs e)
