@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS Temat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_dzialu INT NOT NULL,
     nazwa VARCHAR(100) NOT NULL,
+    czy_wybrany TINYINT NOT NULL DEFAULT 0,
     CONSTRAINT fk_temat_dzial 
         FOREIGN KEY (id_dzialu) REFERENCES Dzial(id) 
         ON DELETE CASCADE ON UPDATE CASCADE
