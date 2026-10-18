@@ -51,10 +51,10 @@ namespace LearnLanguages.Views.Controls
                 // Z XAML (atrybut Tag="{Binding}") wyciągamy cały obiekt Topic
                 if (clickedButton.Tag is Topic selectedTopic)
                 {
-                    // 1. Zapisujemy zmianę w bazie danych MySQL
+                    // Zapisujemy zmianę w bazie danych MySQL
                     DatabaseService.MarkTopicAsSelected(selectedTopic.Id);
 
-                    // 2. Odświeżamy listę tematów, żeby przycisk zmienił się na wyszarzony "Już dodane"
+                    // Odświeżamy listę tematów, żeby przycisk zmienił się na wyszarzony "Już dodane"
                     TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedTopic.DepartmentId);
                 }
             }
@@ -64,7 +64,6 @@ namespace LearnLanguages.Views.Controls
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
-                // Zakładam, że chcesz wrócić do LanguageMenu
                 mainWindow.MainContentArea.Content = new LanguageMenu();
             }
         }

@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using LearnLanguages.Models;
 using LearnLanguages.Services;
 using LearnLanguages.Views;
-using LearnLanguages.Views.Controls; // Ścieżka do Twojego DatabaseService
+using LearnLanguages.Views.Controls; // Ścieżka do  DatabaseService
 
 namespace LearnLanguages.View.Controls
 {
@@ -32,23 +32,21 @@ namespace LearnLanguages.View.Controls
 
         private void LoadCalendar()
         {
-            // 1. Zaktualizuj napis na górze, np. "Październik 2026"
+            // Zaktualizuj napis na górze, np. "Październik 2026"
             string rawMonthYear = _currentDate.ToString("MMMM yyyy");
             TxtMonthYear.Text = char.ToUpper(rawMonthYear[0]) + rawMonthYear.Substring(1);
 
-            // 2. Określamy pierwszy dzień obecnego miesiąca
+            // Określamy pierwszy dzień obecnego miesiąca
             DateTime firstDayOfMonth = new DateTime(_currentDate.Year, _currentDate.Month, 1);
 
-            // 3. Sprawdzamy, w jaki dzień tygodnia wypada 1. dzień miesiąca
-            // W C# niedziela to 0. My chcemy, żeby tydzień zaczynał się od poniedziałku.
+            // Sprawdzamy, w jaki dzień tygodnia wypada 1. dzień miesiąca
             int offset = (int)firstDayOfMonth.DayOfWeek;
-            if (offset == 0) offset = 7; // Jeśli niedziela, przesuwamy o 7 dni.
+            if (offset == 0) offset = 7; // Jeśli niedziela przesuwamy o 7 dni.
 
             // Cofamy się do ostatniego poniedziałku z poprzedniego miesiąca
             DateTime startDate = firstDayOfMonth.AddDays(-(offset - 1));
 
-            // 4. Pobieramy liczby słówek na obecny miesiąc z bazy danych
-            // Zmieniamy typ na string
+            //  Pobieramy liczby słówek na obecny miesiąc z bazy danych
             Dictionary<DateTime, int> wordCountsFromDb = DatabaseService.GetReviewCountsForMonth(_currentDate.Year, _currentDate.Month);
 
             var days = new List<CalendarDay>();
@@ -59,7 +57,6 @@ namespace LearnLanguages.View.Controls
 
                 int wordsToReview = 0;
 
-                // 2. Sprawdzamy wprost używając dayDate
                 if (wordCountsFromDb.ContainsKey(dayDate))
                 {
                     wordsToReview = wordCountsFromDb[dayDate];
@@ -89,7 +86,6 @@ namespace LearnLanguages.View.Controls
             LoadCalendar();
         }
 
-        // Powrót
         private void Btn_Back_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as MainWindow;

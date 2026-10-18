@@ -143,5 +143,23 @@ namespace LearnLanguages.Services
             }
             return result;
         }
+        public static int GetReviewCountForToday()
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                // Funkcja CURDATE() w MySQL zwraca dzisiejszą datę.
+                // Używamy <= aby złapać też zaległe powtórki z wczoraj czy przedwczoraj.
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*) 
+            FROM tlumaczenie 
+            WHERE DATE(data_nastepnej_powtorki) <= CURDATE() 
+              AND id_jezyka = 1", connection);
+
+                // ExecuteScalar zwraca pierwszy z brzegu wynik jako obiekt, więc bezpiecznie konwertujemy
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
     }
 }

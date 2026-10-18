@@ -1,4 +1,5 @@
-﻿using LearnLanguages.View.Controls;
+﻿using LearnLanguages.Services;
+using LearnLanguages.View.Controls;
 using LearnLanguages.Views.Controls;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,6 @@ namespace LearnLanguages.Views.Controls
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
-                // Otwieramy nasz nowy, genialny kalendarz
                 mainWindow.MainContentArea.Content = new CalendarMenu();
             }
         }
@@ -42,14 +42,32 @@ namespace LearnLanguages.Views.Controls
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
-                // Podmień aktualny widok (LanguageMenu) na nowy widok (TopicsMenu)
                 mainWindow.MainContentArea.Content = new TopicsMenu();
             }
         }
 
         private void btn_flashcards_Click(object sender, RoutedEventArgs e)
         {
+            int wordsToReviewToday = DatabaseService.GetReviewCountForToday();
 
+            if (wordsToReviewToday == 0)
+            {
+                MessageBox.Show(
+                    "Nie masz na dzisiaj żadnych zaplanowanych fiszek do powtórzenia.\nWybierz nowy temat z zakładki 'Tematy'!",
+                    "Brak słówek na dziś",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+            else
+            {
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                if (mainWindow != null)
+                {
+                    // Tutaj w przyszłości kod przełączający na widok nauki fiszek, np:
+                    // mainWindow.MainContentArea.Content = new FlashcardsMenu();
+                }
+            }
         }
 
         private void btn_tasks_Click(object sender, RoutedEventArgs e)
