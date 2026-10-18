@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="AliceBlue">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -85,6 +86,6 @@
         </Grid>
 
         <!-- Pasek z przyciskiem Wróć -->
-        <Button Grid.Row="2" Content="Wróć" FontFamily="Georgia" Background="IndianRed" Foreground="White" HorizontalAlignment="Left" Padding="20,10" Margin="10 5" Click="Btn_Back_Click"/>
+        <Button Grid.Row="2" Content="Wróć" FontFamily="Georgia" Background="IndianRed" Foreground="White" HorizontalAlignment="Left" Padding="20,10" Margin="10 10" Click="Btn_Back_Click"/>
     </Grid>
 </UserControl>

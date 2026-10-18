@@ -82,10 +82,66 @@ namespace LearnLanguages.Services
             using (var connection = GetConnection())
             {
                 connection.Open();
-                var command = new MySqlCommand("UPDATE temat SET czy_wybrany = 1 WHERE id = @topicId", connection);
-                command.Parameters.AddWithValue("@topicId", topicId);
-                command.ExecuteNonQuery();
+
+                // A) Zmiana statusu na "wybrany" w tabeli temat
+                var cmd1 = new MySqlCommand("UPDATE temat SET czy_wybrany = 1 WHERE id = @topicId", connection);
+                cmd1.Parameters.AddWithValue("@topicId", topicId);
+                cmd1.ExecuteNonQuery();
+
+                // B) Ustawienie jutrzejszej daty w tabeli tlumaczenie.
+                // Łączymy tabele tlumaczenie i slowko, aby zaktualizować tylko słówka z tego tematu (i tylko angielskie id=1).
+                var cmd2 = new MySqlCommand(@"
+            UPDATE tlumaczenie t 
+            JOIN slowko s ON t.id_slowka = s.id 
+            SET t.data_nastepnej_powtorki = @jutro 
+            WHERE s.id_tematu = @topicId AND t.id_jezyka = 1", connection);
+
+                // DateTime.Today ustawia czas na 00:00:00, AddDays(1) to jutro
+                cmd2.Parameters.AddWithValue("@jutro", DateTime.Today.AddDays(1));
+                cmd2.Parameters.AddWithValue("@topicId", topicId);
+                cmd2.ExecuteNonQuery();
             }
+        }
+
+        // 2. NOWA METODA: Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
+        public static Dictionary<DateTime, int> GetReviewCountsForMonth(int year, int month)
+        {
+            var result = new Dictionary<DateTime, int>();
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                // Zliczamy słówka grupując je po dacie powtórki
+                var cmd = new MySqlCommand(@"
+            SELECT DATE(data_nastepnej_powtorki) as review_date, COUNT(*) as count 
+            FROM tlumaczenie 
+            WHERE YEAR(data_nastepnej_powtorki) = @year 
+              AND MONTH(data_nastepnej_powtorki) = @month
+              AND id_jezyka = 1
+            GROUP BY DATE(data_nastepnej_powtorki)", connection);
+
+                cmd.Parameters.AddWithValue("@year", year);
+                cmd.Parameters.AddWithValue("@month", month);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    // 1. MUSI tu być pętla while, która przesuwa "kursor" bazy na kolejny wiersz!
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(reader.GetOrdinal("review_date")))
+                        {
+                            // 2. Bezpieczna konwersja (radzi sobie ze specyficznymi typami MySqlDateTime)
+                            DateTime date = Convert.ToDateTime(reader["review_date"]);
+
+                            // 3. Bezpieczna konwersja BIGINT z COUNT(*) na zwykłego inta
+                            int count = Convert.ToInt32(reader["count"]);
+
+                            result[date] = count;
+                        }
+                    }
+                }
+            }
+            return result;
         }
     }
 }

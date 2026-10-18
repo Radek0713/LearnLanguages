@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LearnLanguages.View.Controls;
+using LearnLanguages.Views.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using LearnLanguages.Views.Controls;
 
 namespace LearnLanguages.Views.Controls
 {
@@ -28,7 +29,12 @@ namespace LearnLanguages.Views.Controls
 
         private void btn_calendar_Click(object sender, RoutedEventArgs e)
         {
-
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                // Otwieramy nasz nowy, genialny kalendarz
+                mainWindow.MainContentArea.Content = new CalendarMenu();
+            }
         }
 
         private void btn_topics_Click(object sender, RoutedEventArgs e)
