@@ -2992,3 +2992,17 @@ INSERT INTO Tlumaczenie (id_slowka, id_jezyka, nazwa, grafika) VALUES
 (1376, 1, 'Candle', 'Wielkanoc-13.pdf'),
 (1377, 1, 'Eucharist wafer', 'Wielkanoc-27.pdf'),
 (1378, 1, 'Easter cookies', 'Wielkanoc-26.pdf');
+
+-- ZMIANA Z PDF NA PNG
+SET SQL_SAFE_UPDATES = 0;
+-- 1. Aktualizacja w tabeli 'slowko'
+UPDATE slowko 
+SET grafika = CONCAT(SUBSTRING(grafika, 1, CHAR_LENGTH(grafika) - 4), '.png')
+WHERE grafika LIKE '%.pdf';
+
+-- 2. Aktualizacja w tabeli 'tlumaczenie'
+UPDATE tlumaczenie 
+SET grafika = CONCAT(SUBSTRING(grafika, 1, CHAR_LENGTH(grafika) - 4), '.png')
+WHERE grafika LIKE '%.pdf';
+
+SET SQL_SAFE_UPDATES = 1;

@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="LearnLanguages.Views.Controls.FlashcardsMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Nagłówek -->
+            <RowDefinition Height="*"/>
+            <!-- Fiszka -->
+            <RowDefinition Height="Auto"/>
+            <!-- Przyciski Oceny/Obracania -->
+            <RowDefinition Height="Auto"/>
+            <!-- Przycisk Wróć -->
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+        <!-- GŁÓWNA STREFA FISZKI -->
+        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="15" 
+                Background="White" Width="500" Height="350" Padding="20">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+            </Border.Effect>
+
+            <Grid>
+                <!-- AWERS (Przód) -->
+                <Grid x:Name="FlashcardFront" Visibility="Visible">
+                    <!-- Miejsce na grafikę z PDF. Używamy Clip do wycięcia fragmentu -->
+                    <Image x:Name="ImgFront" Stretch="UniformToFill">
+                        <Image.Clip>
+                            <RectangleGeometry Rect="50,50,300,200"/>
+                        </Image.Clip>
+                    </Image>
+                    <TextBlock Text="[Grafika Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
+                </Grid>
+
+                <!-- REWERS (Tył z dwiema nazwami) -->
+                <Grid x:Name="FlashcardBack" Visibility="Collapsed">
+                    <Image x:Name="ImgBack" Stretch="UniformToFill"/>
+                    <TextBlock Text="[Pełna Grafika Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- PRZYCISKI AKCJI -->
+        <Grid Grid.Row="2" Margin="0,30,0,30" HorizontalAlignment="Center">
+            <!-- Przycisk Obróć -->
+            <Button x:Name="BtnFlip" Content="Obróć fiszkę" FontSize="18" Padding="30,15" 
+                    Background="CornflowerBlue" Foreground="White" 
+                    Click="BtnFlip_Click"/>
+
+            <!-- Przyciski Dobrze/Źle (Ukryte na starcie) -->
+            <StackPanel x:Name="EvaluationButtons" Orientation="Horizontal" Visibility="Collapsed">
+                <Button x:Name="BtnBad" Content="Źle" FontSize="16" Padding="30,15" 
+                        Background="IndianRed" Foreground="White" Margin="0,0,20,0" 
+                        Click="BtnBad_Click"/>
+
+                <Button x:Name="BtnGood" Content="Dobrze" FontSize="16" Padding="30,15" 
+                        Background="MediumSeaGreen" Foreground="White" 
+                        Click="BtnGood_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- PRZYCISK WRÓĆ -->
+        <Button Grid.Row="3" Content="Wróć" HorizontalAlignment="Left" Padding="20,10" Click="Btn_Back_Click"/>
+    </Grid>
+</UserControl>

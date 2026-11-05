@@ -1,5 +1,4 @@
 ﻿using LearnLanguages.Services;
-using LearnLanguages.View.Controls;
 using LearnLanguages.Views.Controls;
 using System;
 using System.Collections.Generic;
@@ -64,8 +63,7 @@ namespace LearnLanguages.Views.Controls
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)
                 {
-                    // Tutaj w przyszłości kod przełączający na widok nauki fiszek, np:
-                    // mainWindow.MainContentArea.Content = new FlashcardsMenu();
+                    //mainWindow.MainContentArea.Content = new FlashcardsMenu();
                 }
             }
         }

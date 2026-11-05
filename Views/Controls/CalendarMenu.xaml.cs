@@ -17,7 +17,7 @@ using LearnLanguages.Services;
 using LearnLanguages.Views;
 using LearnLanguages.Views.Controls; // Ścieżka do  DatabaseService
 
-namespace LearnLanguages.View.Controls
+namespace LearnLanguages.Views.Controls
 {
     public partial class CalendarMenu : UserControl
     {
