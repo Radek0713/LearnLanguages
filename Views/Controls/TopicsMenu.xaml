@@ -5,9 +5,80 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             Background="AliceBlue">
-    <Grid Margin="20">
+             d:DesignHeight="500" d:DesignWidth="800"
+             Background="#FAF7F2">
+    <!-- Spójne, ciepłe kremowe tło -->
+
+    <UserControl.Resources>
+        <!-- Styl dla przycisku Wróć (identyczny jak w kalendarzu i innych menu) -->
+        <Style x:Key="ModernBackButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#64748B"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="20,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="12" BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#64748B" BlurRadius="10" ShadowDepth="2" Opacity="0.15"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stylowy, nowoczesny ScrollBar pasujący do aplikacji -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border Background="#CBD5E1" CornerRadius="4" Margin="2,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Styl dla ListBoxa z działami -->
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="6"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Nagłówek -->
@@ -17,33 +88,38 @@
             <!-- Pasek dolny z przyciskiem Wróć -->
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Zarządzanie Tematami" FontSize="24" FontFamily="Georgia" FontWeight="Bold" Foreground="Black" Margin="0,0,0,20"/>
+        <!-- Nagłówek -->
+        <TextBlock Text="Zarządzanie Tematami" FontSize="22" FontWeight="Bold" Foreground="#1E293B" FontFamily="Segoe UI" Margin="0,0,0,16"/>
 
         <!-- Siatka dla Działów (Lewa) i Tematów (Prawa) -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <!-- Lewa kolumna zajmuje 1 część -->
-                <ColumnDefinition Width="1*"/>
-                <!-- Prawa kolumna zajmuje 2 części (jest szersza) -->
+                <ColumnDefinition Width="1.2*"/>
+                <!-- Lewa kolumna (Działy) -->
+                <ColumnDefinition Width="2*"/>
+                <!-- Prawa kolumna (Tematy - szersza) -->
             </Grid.ColumnDefinitions>
 
             <!-- LEWA STRONA: Lista Działów -->
-            <ListBox x:Name="DepartmentsListBox" 
-                     Grid.Column="0" 
-                     FontFamily="Georgia"
-                     Margin="0,0,10,0"
-                     DisplayMemberPath="Name" 
-                     SelectionChanged="DepartmentsListBox_SelectionChanged"
-                     FontSize="16" Padding="5"/>
+            <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Background="White" Margin="0,0,12,0" Padding="4">
+                <ListBox x:Name="DepartmentsListBox" 
+                         Background="Transparent"
+                         BorderThickness="0"
+                         DisplayMemberPath="Name" 
+                         SelectionChanged="DepartmentsListBox_SelectionChanged"
+                         FontSize="15"/>
+            </Border>
 
             <!-- PRAWA STRONA: Lista Tematów -->
-            <!-- ItemsControl to lekka kontrolka do wyświetlania list, gdy chcemy mieć pełną kontrolę nad wyglądem każdego elementu -->
-            <ScrollViewer Grid.Column="1" Margin="10,0,0,0" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Column="1" Margin="12,0,0,0" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="TopicsItemsControl">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="White" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                            <!-- Karta tematu z zaokrąglonymi rogami, cieniem i ładnym tłem -->
+                            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,10">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#E2E8F0" BlurRadius="10" ShadowDepth="2" Opacity="0.4"/>
+                                </Border.Effect>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -51,27 +127,41 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Nazwa tematu -->
-                                    <TextBlock Text="{Binding Name}" FontFamily="Georgia" FontSize="16" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}" FontFamily="Segoe UI" FontSize="15" FontWeight="Medium" Foreground="#334155" VerticalAlignment="Center" Margin="0,0,12,0" TextWrapping="Wrap"/>
 
-                                    <!-- Przycisk "Dodaj". Używamy Tag="{Binding}" aby przekazać cały obiekt Topic do metody Click w C# -->
-                                    <Button Grid.Column="1" Padding="15,5" Tag="{Binding}" Click="AddTopic_Click">
+                                    <!-- Przycisk "Dodaj" / "Już dodane" z odpowiednią minimalną szerokością -->
+                                    <Button Grid.Column="1" Tag="{Binding}" Click="AddTopic_Click" Cursor="Hand" Height="38" MinWidth="125" Padding="12,0">
                                         <Button.Style>
                                             <Style TargetType="Button">
-                                                <!-- Domyślny wygląd -->
                                                 <Setter Property="Content" Value="Dodaj do nauki"/>
                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                <Setter Property="Background" Value="MediumSeaGreen"/>
+                                                <Setter Property="Background" Value="#10B981"/>
                                                 <Setter Property="Foreground" Value="White"/>
-                                                <Setter Property="FontFamily" Value="Georgia"/>
+                                                <Setter Property="FontFamily" Value="Segoe UI"/>
+                                                <Setter Property="FontSize" Value="13"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="10" BorderThickness="0">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="BtnBorder" Property="Opacity" Value="0.9"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
 
-                                                <!-- Magia WPF: Jeśli właściwość IsSelected w bazie wynosi True, zmień wygląd przycisku! -->
+                                                <!-- Wygląd po zaznaczeniu ("Już dodane") -->
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="Content" Value="Już dodane"/>
                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                        <Setter Property="Background" Value="LightGray"/>
-                                                        <Setter Property="Foreground" Value="DarkGray"/>
-                                                        <Setter Property="FontFamily" Value="Georgia"/>
+                                                        <Setter Property="Background" Value="#E2E8F0"/>
+                                                        <Setter Property="Foreground" Value="#94A3B8"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -86,6 +176,7 @@
         </Grid>
 
         <!-- Pasek z przyciskiem Wróć -->
-        <Button Grid.Row="2" Content="Wróć" FontFamily="Georgia" Background="IndianRed" Foreground="White" HorizontalAlignment="Left" Padding="20,10" Margin="10 10" Click="Btn_Back_Click"/>
+        <Button Grid.Row="2" Content="Wróć" Style="{StaticResource ModernBackButtonStyle}" 
+                HorizontalAlignment="Left" Margin="0,16,0,0" Click="Btn_Back_Click" Width="100"/>
     </Grid>
 </UserControl>

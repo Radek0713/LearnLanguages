@@ -6,32 +6,84 @@
              xmlns:local="clr-namespace:LearnLanguages"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Background="AliceBlue">
+             Background="#FAF7F2">
+
+    <UserControl.Resources>
+        <Style x:Key="ModernMenuButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Margin" Value="0,6"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="14" BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#2563EB" BlurRadius="15" ShadowDepth="3" Opacity="0.15"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*"/>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="4*"/>
-            <RowDefinition Height="2*"/>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="2" Grid.Column="1">
-            <Button x:Name="btn_calendar" Content="Kalendarz" FontFamily="Georgia"
-Background="IndianRed" Foreground="White"
-Margin="10 5" Click="btn_calendar_Click"/>
-            <Button x:Name="btn_topics" Content="Tematy" FontFamily="Georgia"
-Background="IndianRed" Foreground="White"
-Margin="10 5" Click="btn_topics_Click"/>
-            <Button x:Name="btn_flashcards" Content="Fiszki" FontFamily="Georgia"
-Background="IndianRed" Foreground="White"
-Margin="10 5" Click="btn_flashcards_Click"/>
-            <Button x:Name="btn_tasks" Content="Zadania" FontFamily="Georgia"
-Background="IndianRed" Foreground="White"
-Margin="10 5" Click="btn_tasks_Click"/>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+            <Button x:Name="btn_calendar" 
+                    Background="#2563EB" 
+                    Style="{StaticResource ModernMenuButtonStyle}" 
+                    Click="btn_calendar_Click">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Kalendarz" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="btn_topics" 
+                    Background="#2563EB" 
+                    Style="{StaticResource ModernMenuButtonStyle}" 
+                    Click="btn_topics_Click">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="📚" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Tematy" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="btn_flashcards" 
+                    Background="#2563EB" 
+                    Style="{StaticResource ModernMenuButtonStyle}" 
+                    Click="btn_flashcards_Click">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Fiszki" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="btn_tasks" 
+                    Background="#2563EB" 
+                    Style="{StaticResource ModernMenuButtonStyle}" 
+                    Click="btn_tasks_Click">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Zadania" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

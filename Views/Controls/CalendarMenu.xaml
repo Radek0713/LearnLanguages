@@ -5,9 +5,52 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LearnLanguages"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             Background="AliceBlue">
-    <Grid Margin="20">
+             d:DesignHeight="500" d:DesignWidth="800"
+             Background="#FAF7F2">
+    <!-- Spójne, ciepłe kremowe tło -->
+
+    <UserControl.Resources>
+        <!-- Styl dla nowoczesnych, jasnych przycisków w kalendarzu -->
+        <Style x:Key="ModernCalendarButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="12" BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#2563EB" BlurRadius="12" ShadowDepth="2" Opacity="0.15"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Specjalny styl dla przycisku Wróć (wygaszony/szary lub alternatywny) -->
+        <Style x:Key="ModernBackButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernCalendarButtonStyle}">
+            <Setter Property="Background" Value="#64748B"/>
+            <!-- Elegancki szaro-grafitowy -->
+            <Setter Property="Width" Value="100"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Miesiąc i przyciski nawigacji -->
@@ -20,28 +63,31 @@
         </Grid.RowDefinitions>
 
         <!-- Pasek górny: Lewo, Miesiąc/Rok, Prawo -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button Content=" &lt; Poprzedni " FontFamily="Georgia" Padding="10,5" Click="Btn_PrevMonth_Click"/>
+
+            <Button Content="&lt; Poprzedni" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_PrevMonth_Click" Grid.ColumnSpan="2" Margin="0,0,652,0"/>
+
             <TextBlock x:Name="TxtMonthYear" Grid.Column="1" Text="Czerwiec 2026" 
-                       FontSize="24" FontWeight="Bold" Foreground="Black" FontFamily="Georgia"
+                       FontSize="22" FontWeight="Bold" Foreground="#1E293B" FontFamily="Segoe UI"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Button Grid.Column="2" Content=" Następny &gt; " FontFamily="Georgia" Padding="10,5" Click="Btn_NextMonth_Click"/>
+
+            <Button Grid.Column="1" Content="Następny &gt;" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_NextMonth_Click" Grid.ColumnSpan="2" Margin="652,0,0,0"/>
         </Grid>
 
         <!-- Nagłówki dni tygodnia -->
         <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,10">
-            <TextBlock Text="Pon" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Wto" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Śro" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Czw" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Pią" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Sob" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-            <TextBlock Text="Nie" FontWeight="Bold" Foreground="IndianRed" HorizontalAlignment="Center"/>
+            <TextBlock Text="Pon" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Wto" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Śro" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Czw" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Pią" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Sob" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
+            <TextBlock Text="Nie" FontWeight="Bold" Foreground="#EF4444" FontFamily="Segoe UI" FontSize="14" HorizontalAlignment="Center"/>
         </UniformGrid>
 
         <!-- NASZ AUTORSKI KALENDARZ -->
@@ -54,18 +100,16 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <!-- Wygląd pojedynczej kratki dnia -->
-                    <Border BorderBrush="LightGray" BorderThickness="1" Background="White" Margin="2">
-                        <Grid>
+                    <!-- Wygląd pojedynczej kratki dnia z zaokrąglonymi rogami i delikatnym obramowaniem -->
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" Background="White" CornerRadius="10" Margin="3">
+                        <Grid Margin="6">
 
                             <!-- Półprzezroczysty szary blok dla dni spoza obecnego miesiąca -->
-                            <Border Background="LightGray" Opacity="0.5">
+                            <Border Background="#F1F5F9" CornerRadius="8" Opacity="0.7">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                        <!-- Domyślnie ukryte -->
                                         <Style.Triggers>
-                                            <!-- Pokaż tylko wtedy, gdy IsCurrentMonth jest False -->
                                             <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
@@ -74,16 +118,10 @@
                                 </Border.Style>
                             </Border>
 
-                            <!-- Zamieniamy StackPanel na Grid -->
-                            <Grid Margin="5">
-
-                                <!-- Definiujemy 2 kolumny: lewa (na słówka) zajmie tyle miejsca ile trzeba, prawa (na numer) też -->
-                                <!-- Ale dzięki układom 'Left' i 'Right' rozjadą się one na boki komórki kalendarza -->
-
+                            <Grid>
                                 <!-- LEWA STRONA: Kółeczko z liczbą słówek -->
-                                <Border Background="Orange" CornerRadius="15" Padding="5,2" 
-            HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <!-- Wyrównanie do lewej i do środka w pionie -->
+                                <Border Background="#3B82F6" CornerRadius="10" Padding="6,3" 
+                                        HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -96,15 +134,13 @@
                                     </Border.Style>
 
                                     <TextBlock Text="{Binding WordCount, StringFormat='{}{0} słówek'}" 
-                   Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                               Foreground="White" FontWeight="Bold" FontSize="11" FontFamily="Segoe UI"/>
                                 </Border>
 
                                 <!-- PRAWA STRONA: Numer dnia -->
                                 <TextBlock Text="{Binding DayNumber}" 
-               FontWeight="Bold" FontSize="14"
-               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                <!-- Wyrównanie do prawej i do środka w pionie -->
-
+                                           FontWeight="Bold" FontSize="15" Foreground="#334155" FontFamily="Segoe UI"
+                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </Border>
@@ -113,6 +149,7 @@
         </ItemsControl>
 
         <!-- Przycisk Wróć -->
-        <Button Grid.Row="3" Content="Wróć" FontFamily="Georgia" Background="IndianRed" Foreground="White" HorizontalAlignment="Left" Padding="20,10" Margin="10 10" Click="Btn_Back_Click"/>
+        <Button Grid.Row="3" Content="Wróć" Style="{StaticResource ModernBackButtonStyle}" 
+                HorizontalAlignment="Left" Margin="0,16,0,0" Click="Btn_Back_Click"/>
     </Grid>
 </UserControl>
