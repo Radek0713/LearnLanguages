@@ -76,14 +76,13 @@ namespace LearnLanguages.Services
             return topics;
         }
 
-        // Aktualizuje status tematu na "wybrany"
+        // Aktualizuje temat fiszki w bazie na "wybrany"
         public static void MarkTopicAsSelected(int topicId)
         {
             using (var connection = GetConnection())
             {
                 connection.Open();
 
-                // A) Zmiana statusu na "wybrany" w tabeli temat
                 var cmd1 = new MySqlCommand("UPDATE temat SET czy_wybrany = 1 WHERE id = @topicId", connection);
                 cmd1.Parameters.AddWithValue("@topicId", topicId);
                 cmd1.ExecuteNonQuery();
@@ -93,17 +92,17 @@ namespace LearnLanguages.Services
                 var cmd2 = new MySqlCommand(@"
             UPDATE tlumaczenie t 
             JOIN slowko s ON t.id_slowka = s.id 
-            SET t.data_nastepnej_powtorki = @jutro 
+            SET t.data_nastepnej_powtorki = @dzisiaj
             WHERE s.id_tematu = @topicId AND t.id_jezyka = 1", connection);
 
                 // DateTime.Today ustawia czas na 00:00:00, AddDays(1) to jutro
-                cmd2.Parameters.AddWithValue("@jutro", DateTime.Today.AddDays(1));
+                cmd2.Parameters.AddWithValue("@dzisiaj", DateTime.Today);
                 cmd2.Parameters.AddWithValue("@topicId", topicId);
                 cmd2.ExecuteNonQuery();
             }
         }
 
-        // 2. NOWA METODA: Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
+        // Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
         public static Dictionary<DateTime, int> GetReviewCountsForMonth(int year, int month)
         {
             var result = new Dictionary<DateTime, int>();
@@ -143,7 +142,7 @@ namespace LearnLanguages.Services
             }
             return result;
         }
-        public static int GetReviewCountForToday()
+        public static int GetReviewCountForToday() // dla funkcji z okienkiem czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
         {
             using (var connection = GetConnection())
             {
@@ -160,6 +159,49 @@ namespace LearnLanguages.Services
                 // ExecuteScalar zwraca pierwszy z brzegu wynik jako obiekt, więc bezpiecznie konwertujemy
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
+        }
+        public static List<FlashcardModel> GetFlashcardsForToday()
+        {
+            var flashcards = new List<FlashcardModel>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                // Łączymy tlumaczenie -> slowko -> temat -> dzial
+                string query = @"
+            SELECT 
+                t.id AS TranslationId,
+                dz.nazwa AS CategoryName,
+                tem.nazwa AS TopicName,
+                s.grafika AS PolImageName,
+                t.grafika AS EngImageName
+            FROM tlumaczenie t
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN temat tem ON s.id_tematu = tem.id
+            JOIN dzial dz ON tem.id_dzialu = dz.id
+            WHERE DATE(t.data_nastepnej_powtorki) <= CURDATE()
+              AND t.id_jezyka = 1";
+
+                var cmd = new MySqlCommand(query, connection);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        flashcards.Add(new FlashcardModel
+                        {
+                            TranslationId = reader.GetInt32("TranslationId"),
+                            CategoryName = reader.GetString("CategoryName"),
+                            TopicName = reader.GetString("TopicName"),
+                            PolImageName = reader.GetString("PolImageName"),
+                            EngImageName = reader.GetString("EngImageName")
+                        });
+                    }
+                }
+            }
+
+            return flashcards;
         }
     }
 }

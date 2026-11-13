@@ -63,7 +63,7 @@ namespace LearnLanguages.Views.Controls
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)
                 {
-                    //mainWindow.MainContentArea.Content = new FlashcardsMenu();
+                    mainWindow.MainContentArea.Content = new FlashcardsMenu();
                 }
             }
         }

@@ -18,11 +18,11 @@
             <!-- Przycisk Wróć -->
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+        <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="Black" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
         <!-- GŁÓWNA STREFA FISZKI -->
-        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="15" 
-                Background="White" Width="500" Height="350" Padding="20">
+        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="5" 
+                Background="White" Width="350" Height="350" Padding="4">
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
             </Border.Effect>
@@ -30,19 +30,48 @@
             <Grid>
                 <!-- AWERS (Przód) -->
                 <Grid x:Name="FlashcardFront" Visibility="Visible">
-                    <!-- Miejsce na grafikę z PDF. Używamy Clip do wycięcia fragmentu -->
-                    <Image x:Name="ImgFront" Stretch="UniformToFill">
+                    <!-- Tekst widoczny TYLKO gdy ImgFront.Source == null -->
+                    <TextBlock Text="[Brak grafiki Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Source, ElementName=ImgFront}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Image x:Name="ImgFront" Stretch="Uniform">
                         <Image.Clip>
-                            <RectangleGeometry Rect="50,50,300,200"/>
+                            <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
                         </Image.Clip>
                     </Image>
-                    <TextBlock Text="[Grafika Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
                 </Grid>
 
                 <!-- REWERS (Tył z dwiema nazwami) -->
                 <Grid x:Name="FlashcardBack" Visibility="Collapsed">
-                    <Image x:Name="ImgBack" Stretch="UniformToFill"/>
-                    <TextBlock Text="[Pełna Grafika Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
+                    <!-- Tekst widoczny TYLKO gdy ImgBack.Source == null -->
+                    <TextBlock Text="[Brak grafiki Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Source, ElementName=ImgBack}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Image x:Name="ImgBack" Stretch="Uniform">
+                        <Image.Clip>
+                            <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
+                        </Image.Clip>
+                    </Image>
                 </Grid>
             </Grid>
         </Border>
