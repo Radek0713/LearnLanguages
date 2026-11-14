@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="LearnLanguages.Views.Controls.TasksMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="#FAF7F2">
+
+    <UserControl.Resources>
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Margin" Value="0,6"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="14" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- KROK 1: Wybór Słówka / Gramatyka -->
+        <StackPanel x:Name="pnl_task_menu" Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Text="Wybierz typ zadań:" FontSize="18" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            <Button Content="📚 Słówka" Background="#2563EB" Style="{StaticResource ModernButtonStyle}" Click="btn_vocab_menu_Click"/>
+            <Button Content="⚙️ Gramatyka" Background="#2563EB" Style="{StaticResource ModernButtonStyle}" Click="btn_grammar_menu_Click"/>
+        </StackPanel>
+
+        <!-- KROK 2A: Wybór konkretnego tematu słówek -->
+        <StackPanel x:Name="pnl_vocabulary_selection" Grid.Column="1" VerticalAlignment="Center" Visibility="Collapsed">
+            <TextBlock Text="Wybierz temat słówek:" FontSize="18" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            <ComboBox x:Name="cb_topics" Height="35" Margin="0,0,0,10" DisplayMemberPath="Name"/>
+            <Button Content="Generuj zadania" Background="#10B981" Style="{StaticResource ModernButtonStyle}" Click="btn_generate_vocab_tasks_Click"/>
+            <Button Content="Wstecz" Background="#64748B" Style="{StaticResource ModernButtonStyle}" Click="btn_back_to_menu_Click"/>
+        </StackPanel>
+
+        <!-- KROK 2B: Wybór zagadnienia gramatycznego -->
+        <StackPanel x:Name="pnl_grammar_selection" Grid.Column="1" VerticalAlignment="Center" Visibility="Collapsed">
+            <TextBlock Text="Wybierz zagadnienie gramatyczne:" FontSize="18" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            <ComboBox x:Name="cb_grammar" Height="35" Margin="0,0,0,10" DisplayMemberPath="Name"/>
+            <Button Content="Generuj zadania" Background="#10B981" Style="{StaticResource ModernButtonStyle}" Click="btn_generate_grammar_tasks_Click"/>
+            <Button Content="Wstecz" Background="#64748B" Style="{StaticResource ModernButtonStyle}" Click="btn_back_to_menu_Click"/>
+        </StackPanel>
+
+        <!-- KROK 3: Ekran Quizu (Rozwiązywanie zadań od LLM) -->
+        <StackPanel x:Name="pnl_quiz" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Width="650" Visibility="Collapsed">
+            <TextBlock x:Name="txt_loading" Text="⏳ Generuję zadania za pomocą AI, proszę czekać..." FontSize="16" FontWeight="SemiBold" Foreground="#D97706" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <TextBlock x:Name="txt_question" Text="Treść zadania..." FontSize="18" FontWeight="Bold" Foreground="#1E293B" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <Button x:Name="btn_option1" Content="Opcja A" Style="{StaticResource ModernButtonStyle}" Background="#2563EB" Click="Answer_Click"/>
+            <Button x:Name="btn_option2" Content="Opcja B" Style="{StaticResource ModernButtonStyle}" Background="#2563EB" Click="Answer_Click"/>
+            <Button x:Name="btn_option3" Content="Opcja C" Style="{StaticResource ModernButtonStyle}" Background="#2563EB" Click="Answer_Click"/>
+            <Button x:Name="btn_option4" Content="Opcja D" Style="{StaticResource ModernButtonStyle}" Background="#2563EB" Click="Answer_Click"/>
+
+            <TextBlock x:Name="txt_feedback" Text="" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,15,0,15"/>
+
+            <Button x:Name="btn_next" Content="Następne zadanie" Background="#10B981" Style="{StaticResource ModernButtonStyle}" Visibility="Collapsed" Click="btn_next_Click"/>
+            <Button Content="Zakończ / Wróć do menu" Background="#64748B" Style="{StaticResource ModernButtonStyle}" Click="btn_back_to_menu_Click" Margin="0,10,0,0"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

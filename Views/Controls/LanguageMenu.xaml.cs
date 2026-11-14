@@ -70,7 +70,11 @@ namespace LearnLanguages.Views.Controls
 
         private void btn_tasks_Click(object sender, RoutedEventArgs e)
         {
-
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.MainContentArea.Content = new TasksMenu();
+            }
         }
     }
 }
