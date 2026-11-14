@@ -6,6 +6,41 @@
              xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <!-- Wspólny nowoczesny styl dla wszystkich przycisków w widoku -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#64748B"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="24,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="12" BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#64748B" BlurRadius="10" ShadowDepth="2" Opacity="0.15"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -18,7 +53,21 @@
             <!-- Przycisk Wróć -->
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="Black" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,20" HorizontalAlignment="Center">
+            <TextBlock Text="Nauka: Fiszki" 
+               FontSize="24" 
+               FontWeight="Bold" 
+               Foreground="Black" 
+               HorizontalAlignment="Center"/>
+
+            <TextBlock x:Name="TxtTopicInfo" 
+               Text="Dział • Temat" 
+               FontSize="15" 
+               FontWeight="SemiBold" 
+               Foreground="#64748B" 
+               Margin="0,4,0,0" 
+               HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <!-- GŁÓWNA STREFA FISZKI -->
         <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="5" 
@@ -79,23 +128,32 @@
         <!-- PRZYCISKI AKCJI -->
         <Grid Grid.Row="2" Margin="0,30,0,30" HorizontalAlignment="Center">
             <!-- Przycisk Obróć -->
-            <Button x:Name="BtnFlip" Content="Obróć fiszkę" FontSize="18" Padding="30,15" 
-                    Background="CornflowerBlue" Foreground="White" 
+            <Button x:Name="BtnFlip" Content="Obróć fiszkę" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    FontSize="16" Height="46" Padding="32,0"
+                    Background="CornflowerBlue" 
                     Click="BtnFlip_Click"/>
 
             <!-- Przyciski Dobrze/Źle (Ukryte na starcie) -->
             <StackPanel x:Name="EvaluationButtons" Orientation="Horizontal" Visibility="Collapsed">
-                <Button x:Name="BtnBad" Content="Źle" FontSize="16" Padding="30,15" 
-                        Background="IndianRed" Foreground="White" Margin="0,0,20,0" 
+                <Button x:Name="BtnBad" Content="Źle" 
+                        Style="{StaticResource ModernButtonStyle}"
+                        FontSize="16" Height="46" MinWidth="120"
+                        Background="IndianRed" Margin="0,0,20,0" 
                         Click="BtnBad_Click"/>
 
-                <Button x:Name="BtnGood" Content="Dobrze" FontSize="16" Padding="30,15" 
-                        Background="MediumSeaGreen" Foreground="White" 
+                <Button x:Name="BtnGood" Content="Dobrze" 
+                        Style="{StaticResource ModernButtonStyle}"
+                        FontSize="16" Height="46" MinWidth="120"
+                        Background="MediumSeaGreen" 
                         Click="BtnGood_Click"/>
             </StackPanel>
         </Grid>
 
         <!-- PRZYCISK WRÓĆ -->
-        <Button Grid.Row="3" Content="Wróć" HorizontalAlignment="Left" Padding="20,10" Click="Btn_Back_Click"/>
+        <Button Grid.Row="3" Content="Wróć" 
+                Style="{StaticResource ModernButtonStyle}"
+                HorizontalAlignment="Left" 
+                Click="Btn_Back_Click"/>
     </Grid>
 </UserControl>

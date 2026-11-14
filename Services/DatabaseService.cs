@@ -175,7 +175,10 @@ namespace LearnLanguages.Services
                 dz.nazwa AS CategoryName,
                 tem.nazwa AS TopicName,
                 s.grafika AS PolImageName,
-                t.grafika AS EngImageName
+                t.grafika AS EngImageName,
+                t.wspolczynnik_latwosci AS EasinessFactor,
+                t.odstep_powtorek AS IntervalDays,
+                t.liczba_poprawnych_powtorek AS Repetitions
             FROM tlumaczenie t
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
@@ -189,19 +192,88 @@ namespace LearnLanguages.Services
                 {
                     while (reader.Read())
                     {
+                        int efOrdinal = reader.GetOrdinal("EasinessFactor");
+                        int intervalOrdinal = reader.GetOrdinal("IntervalDays");
+                        int repOrdinal = reader.GetOrdinal("Repetitions");
+
                         flashcards.Add(new FlashcardModel
                         {
                             TranslationId = reader.GetInt32("TranslationId"),
                             CategoryName = reader.GetString("CategoryName"),
                             TopicName = reader.GetString("TopicName"),
                             PolImageName = reader.GetString("PolImageName"),
-                            EngImageName = reader.GetString("EngImageName")
+                            EngImageName = reader.GetString("EngImageName"),
+                            EasinessFactor = reader.IsDBNull(efOrdinal) ? 2.5 : reader.GetDouble(efOrdinal),
+                            Interval = reader.IsDBNull(intervalOrdinal) ? 0 : reader.GetInt32(intervalOrdinal),
+                            Repetitions = reader.IsDBNull(repOrdinal) ? 0 : reader.GetInt32(repOrdinal)
                         });
                     }
                 }
             }
 
             return flashcards;
+        }
+
+        public static void UpdateFlashcardProgress(FlashcardModel card, bool isCorrect)
+        {
+            int n = card.Repetitions;
+            int interval = card.Interval;
+            double ef = card.EasinessFactor;
+
+            if (isCorrect)
+            {
+                n++; // 1. Zwiększamy serię poprawnych odpowiedzi
+
+                if (n == 1) // 2. Obliczamy nowy odstęp używając dotychczasowego EF
+                {
+                    interval = 1;
+                }
+                else if (n == 2)
+                {
+                    interval = 6;
+                }
+                else
+                {
+                    interval = (int)Math.Round(interval * ef, MidpointRounding.AwayFromZero);
+                }
+
+                ef = Math.Round(ef + 0.10, 2); // 3. Aktualizujemy EF dla q = 5 (+0.10)
+            }
+            else
+            {
+                // Błędna odpowiedź (q = 2): reset serii i odstępu, obniżenie EF z limitem min. 1.3
+                n = 0;
+                interval = 1;
+                ef = Math.Round(Math.Max(1.3, ef - 0.32), 2);
+            }
+
+            DateTime today = DateTime.Today;
+            DateTime nextReviewDate = today.AddDays(interval);
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                string query = @"
+            UPDATE tlumaczenie 
+            SET 
+                data_ostatniej_powtorki = @lastReview,
+                data_nastepnej_powtorki = @nextReview,
+                wspolczynnik_latwosci = @ef,
+                odstep_powtorek = @interval,
+                liczba_poprawnych_powtorek = @repetitions
+            WHERE id = @id";
+
+                var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@lastReview", today);
+                cmd.Parameters.AddWithValue("@nextReview", nextReviewDate);
+                cmd.Parameters.AddWithValue("@ef", ef);
+                cmd.Parameters.AddWithValue("@interval", interval);
+                cmd.Parameters.AddWithValue("@repetitions", n);
+                cmd.Parameters.AddWithValue("@id", card.TranslationId);
+
+                cmd.ExecuteNonQuery();
+            }
         }
     }
 }
