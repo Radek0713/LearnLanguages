@@ -12,9 +12,12 @@ namespace LearnLanguages.Views.Controls
     public partial class TasksMenu : UserControl
     {
         private List<string> topicWords = new List<string>();
-        private Random random = new Random();
+        private GrammarModel selectedGrammarTopic = null;
+        private Queue<ExerciseTaskModel> taskQueue = new Queue<ExerciseTaskModel>();
+
         private ExerciseTaskModel currentTask = null;
         private int solvedCount = 0;
+        private bool isGrammarMode = false;
 
         public TasksMenu()
         {
@@ -27,6 +30,7 @@ namespace LearnLanguages.Views.Controls
             pnl_grammar_selection.Visibility = Visibility.Collapsed;
             pnl_quiz.Visibility = Visibility.Collapsed;
             pnl_task_menu.Visibility = Visibility.Visible;
+            taskQueue.Clear();
         }
 
         private void btn_vocab_menu_Click(object sender, RoutedEventArgs e)
@@ -87,11 +91,13 @@ namespace LearnLanguages.Views.Controls
                     return;
                 }
 
+                isGrammarMode = false;
                 pnl_vocabulary_selection.Visibility = Visibility.Collapsed;
                 pnl_quiz.Visibility = Visibility.Visible;
                 solvedCount = 0;
+                taskQueue.Clear();
 
-                await LoadNextVocabularyTaskAsync();
+                await LoadMoreTasksAsync();
             }
             else
             {
@@ -99,71 +105,18 @@ namespace LearnLanguages.Views.Controls
             }
         }
 
-        private async System.Threading.Tasks.Task LoadNextVocabularyTaskAsync()
-        {
-            txt_loading.Visibility = Visibility.Visible;
-            HideQuizContent(true);
-
-            try
-            {
-                string randomWord = topicWords[random.Next(topicWords.Count)];
-                var resultList = await GeminiService.GenerateTaskForSingleWordAsync(randomWord);
-
-                txt_loading.Visibility = Visibility.Collapsed;
-
-                if (resultList != null && resultList.Count > 0)
-                {
-                    currentTask = resultList[0];
-                    ShowCurrentTask();
-                }
-                else
-                {
-                    txt_question.Text = "Nie udało się wygenerować zadania. Spróbuj ponownie.";
-                    HideQuizContent(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                txt_loading.Visibility = Visibility.Collapsed;
-                MessageBox.Show($"Błąd podczas generowania zadania:\n{ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
-                pnl_quiz.Visibility = Visibility.Collapsed;
-                pnl_vocabulary_selection.Visibility = Visibility.Visible;
-            }
-        }
-
         private async void btn_generate_grammar_tasks_Click(object sender, RoutedEventArgs e)
         {
             if (cb_grammar.SelectedItem is GrammarModel selectedGrammar)
             {
+                selectedGrammarTopic = selectedGrammar;
+                isGrammarMode = true;
                 pnl_grammar_selection.Visibility = Visibility.Collapsed;
                 pnl_quiz.Visibility = Visibility.Visible;
                 solvedCount = 0;
-                txt_loading.Visibility = Visibility.Visible;
-                HideQuizContent(true);
+                taskQueue.Clear();
 
-                try
-                {
-                    var resultList = await GeminiService.GenerateGrammarTasksAsync(selectedGrammar.Id, count: 1);
-                    txt_loading.Visibility = Visibility.Collapsed;
-
-                    if (resultList != null && resultList.Count > 0)
-                    {
-                        currentTask = resultList[0];
-                        ShowCurrentTask();
-                    }
-                    else
-                    {
-                        txt_question.Text = "Brak zadań lub błąd połączenia z AI.";
-                        HideQuizContent(false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    txt_loading.Visibility = Visibility.Collapsed;
-                    MessageBox.Show($"Błąd podczas generowania zadania gramatycznego:\n{ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
-                    pnl_quiz.Visibility = Visibility.Collapsed;
-                    pnl_grammar_selection.Visibility = Visibility.Visible;
-                }
+                await LoadMoreTasksAsync();
             }
             else
             {
@@ -171,10 +124,57 @@ namespace LearnLanguages.Views.Controls
             }
         }
 
-        private void ShowCurrentTask()
+        private async System.Threading.Tasks.Task LoadMoreTasksAsync()
         {
-            if (currentTask != null)
+            txt_loading.Visibility = Visibility.Visible;
+            HideQuizContent(true);
+
+            try
             {
+                List<ExerciseTaskModel> resultList = null;
+
+                if (!isGrammarMode)
+                {
+                    // Pobieramy paczkę 5 zadań ze słówek naraz przez Groq
+                    resultList = await GroqService.GenerateBatchTasksForWordsAsync(topicWords, 5);
+                }
+                else
+                {
+                    resultList = await GroqService.GenerateGrammarTasksAsync(selectedGrammarTopic.Id, count: 1);
+                }
+
+                txt_loading.Visibility = Visibility.Collapsed;
+
+                if (resultList != null && resultList.Count > 0)
+                {
+                    foreach (var task in resultList)
+                    {
+                        taskQueue.Enqueue(task);
+                    }
+
+                    ShowNextTaskFromQueue();
+                }
+                else
+                {
+                    txt_question.Text = "Nie udało się wygenerować zadań. Spróbuj ponownie.";
+                    HideQuizContent(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                txt_loading.Visibility = Visibility.Collapsed;
+                MessageBox.Show($"Błąd podczas generowania zadania przez Groq:\n{ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                pnl_quiz.Visibility = Visibility.Collapsed;
+                if (isGrammarMode) pnl_grammar_selection.Visibility = Visibility.Visible;
+                else pnl_vocabulary_selection.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ShowNextTaskFromQueue()
+        {
+            if (taskQueue.Count > 0)
+            {
+                currentTask = taskQueue.Dequeue();
                 solvedCount++;
                 txt_question.Text = $"Zadanie #{solvedCount}:\n{currentTask.TrescZdania}";
 
@@ -191,6 +191,10 @@ namespace LearnLanguages.Views.Controls
                 txt_feedback.Text = "";
                 btn_next.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                _ = LoadMoreTasksAsync();
+            }
         }
 
         private void Answer_Click(object sender, RoutedEventArgs e)
@@ -198,7 +202,6 @@ namespace LearnLanguages.Views.Controls
             if (sender is Button clickedButton && currentTask != null)
             {
                 string selectedAnswer = clickedButton.Content?.ToString();
-
                 ToggleButtonsEnabled(false);
 
                 if (selectedAnswer == currentTask.PoprawnaOdpowiedz)
@@ -222,14 +225,13 @@ namespace LearnLanguages.Views.Controls
 
         private async void btn_next_Click(object sender, RoutedEventArgs e)
         {
-            if (topicWords != null && topicWords.Count > 0)
+            if (taskQueue.Count > 0)
             {
-                await LoadNextVocabularyTaskAsync();
+                ShowNextTaskFromQueue();
             }
             else
             {
-                pnl_quiz.Visibility = Visibility.Collapsed;
-                pnl_task_menu.Visibility = Visibility.Visible;
+                await LoadMoreTasksAsync();
             }
         }
 
