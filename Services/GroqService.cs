@@ -37,13 +37,13 @@ namespace LearnLanguages.Services
 
             string prompt = $@"
 Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {selectedWords.Count} zadań testowych typu 'wypełnij lukę' (fill in the blank) w formacie JSON dla następujących słówek: [{wordsJoined}].
-Zwróć tablicę JSON zawierającą dokładnie {selectedWords.Count} obiektów. Każdy obiekt musi posiadać pola:
+Zwróć obiekt JSON posiadający pole 'tasks' będące tablicą zawierającą dokładnie {selectedWords.Count} obiektów. Każdy obiekt w tablicy musi posiadać pola:
 - 'TrescZdania': zdanie w języku angielskim z luką oznaczoną jako '_____', w które wpisuje się dane słowo.
 - 'Opcje': tablica składająca się dokładnie z 4 stringów (opcje A, B, C, D, gdzie jedna z opcji to dokładnie to słowo, a pozostałe 3 to sensowne dystraktory).
 - 'PoprawnaOdpowiedz': string zawierający dokładnie tę opcję z tablicy 'Opcje', która jest poprawna.
 - 'Wyjasnienie': krótkie wyjaśnienie w języku polskim.
 
-Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON będący tablicą obiektów [ {{}}, {{}} ] (bez żadnych znaczników markdown typu ```json).";
+Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez żadnych znaczników markdown typu ```json).";
 
             return await CallGroqApiAsync(prompt);
         }
@@ -56,13 +56,13 @@ Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON będący tablicą obiektów [ {{}}, 
             string prompt = $@"
 Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie 1 zadanie testowe typu 'wypełnij lukę' (fill in the blank) z gramatyki w formacie JSON.
 Zagadnienie gramatyczne to: '{grammarTopic}'.
-Pola w tablicy JSON (z 1 obiektem):
+Zwróć obiekt JSON z polem 'tasks' zawierającym tablicę z 1 obiektem posiadającym pola:
 - 'TrescZdania': zdanie z luką '_____'.
 - 'Opcje': 4 stringi (A, B, C, D).
 - 'PoprawnaOdpowiedz': poprawna opcja.
 - 'Wyjasnienie': wyjaśnienie po polsku.
 
-Zwróć TYLKO czysty JSON jako tablicę z 1 elementem: [ {{}} ]";
+Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}} ] }} (bez znaczników markdown).";
 
             return await CallGroqApiAsync(prompt);
         }
@@ -84,13 +84,13 @@ Zwróć TYLKO czysty JSON jako tablicę z 1 elementem: [ {{}} ]";
             {
                 model = "openai/gpt-oss-20b", // Wybrany model z darmowego planu
                 messages = new[]
-    {
-        new
-        {
-            role = "user",
-            content = prompt
-        }
-    },
+                {
+                    new
+                    {
+                        role = "user",
+                        content = prompt
+                    }
+                },
                 temperature = 0.7,
                 response_format = new { type = "json_object" }
             };
@@ -131,13 +131,35 @@ Zwróć TYLKO czysty JSON jako tablicę z 1 elementem: [ {{}} ]";
 
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            if (rawText.StartsWith("{"))
+            try
             {
-                var singleItem = JsonSerializer.Deserialize<ExerciseTaskModel>(rawText, options);
-                return singleItem != null ? new List<ExerciseTaskModel> { singleItem } : new List<ExerciseTaskModel>();
+                using var jsonDoc = JsonDocument.Parse(rawText);
+                var rootElement = jsonDoc.RootElement;
+
+                // Jeśli odpowiedź to obiekt posiadający właściwość "tasks"
+                if (rootElement.ValueKind == JsonValueKind.Object && rootElement.TryGetProperty("tasks", out var tasksElement))
+                {
+                    string tasksJson = tasksElement.GetRawText();
+                    return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(tasksJson, options) ?? new List<ExerciseTaskModel>();
+                }
+                // Jeśli model zwróci pojedynczy obiekt
+                else if (rootElement.ValueKind == JsonValueKind.Object)
+                {
+                    var singleItem = JsonSerializer.Deserialize<ExerciseTaskModel>(rawText, options);
+                    return singleItem != null ? new List<ExerciseTaskModel> { singleItem } : new List<ExerciseTaskModel>();
+                }
+                // Jeśli model zwróci bezpośrednio tablicę
+                else if (rootElement.ValueKind == JsonValueKind.Array)
+                {
+                    return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(rawText, options) ?? new List<ExerciseTaskModel>();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Błąd parsowania JSON zwróconego przez Groq: {ex.Message}. Surowy tekst: {rawText}");
             }
 
-            return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(rawText, options) ?? new List<ExerciseTaskModel>();
+            return new List<ExerciseTaskModel>();
         }
     }
 }
