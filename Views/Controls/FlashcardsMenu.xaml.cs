@@ -1,12 +1,12 @@
-﻿using LearnLanguages.Models;
-using LearnLanguages.Services;
-using LearnLanguages.Views;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using LearnLanguages.Models;
+using LearnLanguages.Services;
+using LearnLanguages.Views;
 
 namespace LearnLanguages.Views.Controls
 {
@@ -34,14 +34,28 @@ namespace LearnLanguages.Views.Controls
 
         private void BtnBad_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Zapisz ocenę "Źle" w bazie danych (SM-2)
-            LoadNextFlashcard();
+            ProcessAnswer(isCorrect: false);
         }
 
         private void BtnGood_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Zapisz ocenę "Dobrze" w bazie danych (SM-2)
-            LoadNextFlashcard();
+            ProcessAnswer(isCorrect: true);
+        }
+
+        private void ProcessAnswer(bool isCorrect)
+        {
+            if (_currentFlashcard == null) return;
+
+            try
+            {
+                DatabaseService.UpdateFlashcardProgress(_currentFlashcard, isCorrect);
+                LoadNextFlashcard();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd podczas zapisu postępu do bazy danych:\n{ex.Message}",
+                                "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void LoadNextFlashcard()
@@ -57,6 +71,7 @@ namespace LearnLanguages.Views.Controls
             // 2. Wyciągamy pierwszą z brzegu fiszkę i usuwamy z kolejki (żeby się nie powtarzała)
             _currentFlashcard = _flashcardsQueue[0];
             _flashcardsQueue.RemoveAt(0);
+            TxtTopicInfo.Text = $"{_currentFlashcard.CategoryName} • {_currentFlashcard.TopicName}";
 
             // 3. Budujemy absolutne ścieżki do obrazków na dysku
             // Przyjmujemy, że aplikacja startuje np. z folderu bin/Debug, 
