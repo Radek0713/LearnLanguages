@@ -175,10 +175,7 @@ namespace LearnLanguages.Services
                 dz.nazwa AS CategoryName,
                 tem.nazwa AS TopicName,
                 s.grafika AS PolImageName,
-                t.grafika AS EngImageName,
-                t.wspolczynnik_latwosci AS EasinessFactor,
-                t.odstep_powtorek AS IntervalDays,
-                t.liczba_poprawnych_powtorek AS Repetitions
+                t.grafika AS EngImageName
             FROM tlumaczenie t
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
@@ -192,26 +189,52 @@ namespace LearnLanguages.Services
                 {
                     while (reader.Read())
                     {
-                        int efOrdinal = reader.GetOrdinal("EasinessFactor");
-                        int intervalOrdinal = reader.GetOrdinal("IntervalDays");
-                        int repOrdinal = reader.GetOrdinal("Repetitions");
-
                         flashcards.Add(new FlashcardModel
                         {
                             TranslationId = reader.GetInt32("TranslationId"),
                             CategoryName = reader.GetString("CategoryName"),
                             TopicName = reader.GetString("TopicName"),
                             PolImageName = reader.GetString("PolImageName"),
-                            EngImageName = reader.GetString("EngImageName"),
-                            EasinessFactor = reader.IsDBNull(efOrdinal) ? 2.5 : reader.GetDouble(efOrdinal),
-                            Interval = reader.IsDBNull(intervalOrdinal) ? 0 : reader.GetInt32(intervalOrdinal),
-                            Repetitions = reader.IsDBNull(repOrdinal) ? 0 : reader.GetInt32(repOrdinal)
+                            EngImageName = reader.GetString("EngImageName")
                         });
                     }
                 }
             }
 
             return flashcards;
+        }
+        public static List<string> GetVocabularyWordsByTopic(int topicId)
+        {
+            var words = new List<string>();
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var command = new MySqlCommand("SELECT nazwa FROM slowko WHERE id_tematu = @topicId", connection);
+                command.Parameters.AddWithValue("@topicId", topicId);
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        words.Add(reader.GetString("nazwa"));
+                    }
+                }
+            }
+            return words;
+        }
+
+        // Pobiera nazwe/opis zagadnienia gramatycznego na podstawie jego ID
+        public static string GetGrammarTopicName(int grammarId)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var command = new MySqlCommand("SELECT nazwa FROM gramatyka WHERE id = @grammarId", connection);
+                command.Parameters.AddWithValue("@grammarId", grammarId);
+
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? string.Empty;
+            }
         }
     }
 }

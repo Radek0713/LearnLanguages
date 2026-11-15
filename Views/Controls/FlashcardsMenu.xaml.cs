@@ -1,12 +1,12 @@
-﻿using System;
+﻿using LearnLanguages.Models;
+using LearnLanguages.Services;
+using LearnLanguages.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using LearnLanguages.Models;
-using LearnLanguages.Services;
-using LearnLanguages.Views;
 
 namespace LearnLanguages.Views.Controls
 {
@@ -23,37 +23,25 @@ namespace LearnLanguages.Views.Controls
 
         private void BtnFlip_Click(object sender, RoutedEventArgs e)
         {
+            // Przełączamy widok karty na rewers
             FlashcardFront.Visibility = Visibility.Collapsed;
             FlashcardBack.Visibility = Visibility.Visible;
 
+            // Chowamy przycisk obracania, pokazujemy Dobrze/Źle
             BtnFlip.Visibility = Visibility.Collapsed;
             EvaluationButtons.Visibility = Visibility.Visible;
         }
 
         private void BtnBad_Click(object sender, RoutedEventArgs e)
         {
-            ProcessAnswer(isCorrect: false);
+            // TODO: Zapisz ocenę "Źle" w bazie danych (SM-2)
+            LoadNextFlashcard();
         }
 
         private void BtnGood_Click(object sender, RoutedEventArgs e)
         {
-            ProcessAnswer(isCorrect: true);
-        }
-
-        private void ProcessAnswer(bool isCorrect)
-        {
-            if (_currentFlashcard == null) return;
-
-            try
-            {
-                DatabaseService.UpdateFlashcardProgress(_currentFlashcard, isCorrect);
-                LoadNextFlashcard();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Błąd podczas zapisu postępu do bazy danych:\n{ex.Message}",
-                                "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            // TODO: Zapisz ocenę "Dobrze" w bazie danych (SM-2)
+            LoadNextFlashcard();
         }
 
         private void LoadNextFlashcard()
@@ -69,7 +57,6 @@ namespace LearnLanguages.Views.Controls
             // 2. Wyciągamy pierwszą z brzegu fiszkę i usuwamy z kolejki (żeby się nie powtarzała)
             _currentFlashcard = _flashcardsQueue[0];
             _flashcardsQueue.RemoveAt(0);
-            TxtTopicInfo.Text = $"{_currentFlashcard.CategoryName}  •  {_currentFlashcard.TopicName}";
 
             // 3. Budujemy absolutne ścieżki do obrazków na dysku
             // Przyjmujemy, że aplikacja startuje np. z folderu bin/Debug, 
@@ -87,7 +74,8 @@ namespace LearnLanguages.Views.Controls
             LoadImageSafe(ImgFront, polPath);
             LoadImageSafe(ImgBack, engPath);
 
-            // 5. Reset interfejsu dla nowej karty
+            // 5. Reset interfejsu
+            // Reset interfejsu dla nowej karty
             FlashcardFront.Visibility = Visibility.Visible;
             FlashcardBack.Visibility = Visibility.Collapsed;
 
