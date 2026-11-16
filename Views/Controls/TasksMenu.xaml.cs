@@ -33,6 +33,16 @@ namespace LearnLanguages.Views.Controls
             taskQueue.Clear();
         }
 
+        // Obsługa powrotu do głównego menu aplikacji (LanguageMenu)
+        private void btn_back_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.MainContentArea.Content = new LanguageMenu();
+            }
+        }
+
         private void btn_vocab_menu_Click(object sender, RoutedEventArgs e)
         {
             pnl_task_menu.Visibility = Visibility.Collapsed;
@@ -127,6 +137,8 @@ namespace LearnLanguages.Views.Controls
         private async System.Threading.Tasks.Task LoadMoreTasksAsync()
         {
             txt_loading.Visibility = Visibility.Visible;
+            btn_next.Visibility = Visibility.Collapsed; // Ukrywamy przycisk następnego zadania na czas ładowania
+            txt_feedback.Text = ""; // Czyszczenie wyjaśnienia z poprzedniego zadania
             HideQuizContent(true);
 
             try
@@ -135,12 +147,13 @@ namespace LearnLanguages.Views.Controls
 
                 if (!isGrammarMode)
                 {
-                    // Pobieramy paczkę 5 zadań ze słówek naraz przez Groq
+                    // Pobieramy paczkę 5 zadań ze słówek
                     resultList = await GroqService.GenerateBatchTasksForWordsAsync(topicWords, 5);
                 }
                 else
                 {
-                    resultList = await GroqService.GenerateGrammarTasksAsync(selectedGrammarTopic.Id, count: 1);
+                    // Pobieramy paczkę 5 zadań z gramatyki (zamiast 1)
+                    resultList = await GroqService.GenerateGrammarTasksAsync(selectedGrammarTopic.Id, count: 5);
                 }
 
                 txt_loading.Visibility = Visibility.Collapsed;

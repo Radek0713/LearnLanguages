@@ -21,7 +21,6 @@ namespace LearnLanguages.Services
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             };
 
-            // USTAWIANIE BaseAddress eliminuje problem z "invalid request URI"
             httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri("https://api.groq.com/"),
@@ -36,33 +35,35 @@ namespace LearnLanguages.Services
             string wordsJoined = string.Join(", ", selectedWords);
 
             string prompt = $@"
-Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {selectedWords.Count} zadań testowych typu 'wypełnij lukę' (fill in the blank) w formacie JSON dla następujących słówek: [{wordsJoined}].
-Zwróć obiekt JSON posiadający pole 'tasks' będące tablicą zawierającą dokładnie {selectedWords.Count} obiektów. Każdy obiekt w tablicy musi posiadać pola:
-- 'TrescZdania': zdanie w języku angielskim z luką oznaczoną jako '_____', w które wpisuje się dane słowo.
-- 'Opcje': tablica składająca się dokładnie z 4 stringów (opcje A, B, C, D, gdzie jedna z opcji to dokładnie to słowo, a pozostałe 3 to sensowne dystraktory).
-- 'PoprawnaOdpowiedz': string zawierający dokładnie tę opcję z tablicy 'Opcje', która jest poprawna.
-- 'Wyjasnienie': krótkie wyjaśnienie w języku polskim.
+Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {selectedWords.Count} zadań testowych typu 'wypełnij lukę' (fill in the blank) w formacie JSON dla następujących angielskich słówek: [{wordsJoined}].
+Zasady:
+1. Zdanie ('TrescZdania') musi być w całości w języku angielskim z luką oznaczoną jako '_____'.
+2. Wszystkie opcje w tablicy 'Opcje' (4 stringi: A, B, C, D) muszą być w języku angielskim. Jedna opcja to poszukiwane słowo, pozostałe 3 to sensowne dystraktory.
+3. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. jeśli poprawna opcja to 'read', wpisz 'read', a NIE literę 'A' ani 'Opcja A').
+4. 'Wyjasnienie' ma być krótkie i w języku polskim.
 
+Zwróć obiekt JSON posiadający pole 'tasks' będące tablicą zawierającą dokładnie {selectedWords.Count} obiektów posiadających pola: 'TrescZdania', 'Opcje', 'PoprawnaOdpowiedz', 'Wyjasnienie'.
 Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez żadnych znaczników markdown typu ```json).";
 
             return await CallGroqApiAsync(prompt);
         }
 
-        public static async Task<List<ExerciseTaskModel>> GenerateGrammarTasksAsync(int grammarId, int count = 1)
+        public static async Task<List<ExerciseTaskModel>> GenerateGrammarTasksAsync(int grammarId, int count = 5)
         {
             string grammarTopic = DatabaseService.GetGrammarTopicName(grammarId);
             if (string.IsNullOrEmpty(grammarTopic)) return new List<ExerciseTaskModel>();
 
             string prompt = $@"
-Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie 1 zadanie testowe typu 'wypełnij lukę' (fill in the blank) z gramatyki w formacie JSON.
+Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {count} różnorodnych zadań testowych typu 'wypełnij lukę' (fill in the blank) z gramatyki w formacie JSON.
 Zagadnienie gramatyczne to: '{grammarTopic}'.
-Zwróć obiekt JSON z polem 'tasks' zawierającym tablicę z 1 obiektem posiadającym pola:
-- 'TrescZdania': zdanie z luką '_____'.
-- 'Opcje': 4 stringi (A, B, C, D).
-- 'PoprawnaOdpowiedz': poprawna opcja.
-- 'Wyjasnienie': wyjaśnienie po polsku.
+Zasady:
+1. Zdania ('TrescZdania') oraz wszystkie opcje ('Opcje') muszą być w całości w języku angielskim. Każde zadanie musi posiadać lukę '_____'.
+2. 'Opcje' to tablica 4 stringów (A, B, C, D) po angielsku, gdzie dokładnie jeden jest poprawny, a trzy pozostałe to dystraktory gramatyczne.
+3. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. jeśli poprawna opcja to 'read', wpisz 'read', a NIE literę 'A' ani 'Opcja A').
+4. 'Wyjasnienie' ma być w języku polskim.
 
-Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}} ] }} (bez znaczników markdown).";
+Zwróć obiekt JSON z polem 'tasks' zawierającym tablicę z dokładnie {count} obiektami posiadającymi pola: 'TrescZdania', 'Opcje', 'PoprawnaOdpowiedz', 'Wyjasnienie'.
+Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez znaczników markdown).";
 
             return await CallGroqApiAsync(prompt);
         }
@@ -77,12 +78,11 @@ Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}} ] }} (bez znaczników
                 throw new Exception("Brak klucza GROQ_API_KEY w pliku .env lub zmienna nie jest widoczna!");
             }
 
-            // Podajemy tylko ścieżkę względną, ponieważ BaseAddress jest już skonfigurowany w konstruktorze statycznym
             string endpoint = "openai/v1/chat/completions";
 
             var requestBody = new
             {
-                model = "openai/gpt-oss-20b", // Wybrany model z darmowego planu
+                model = "openai/gpt-oss-20b",
                 messages = new[]
                 {
                     new
@@ -136,19 +136,16 @@ Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}} ] }} (bez znaczników
                 using var jsonDoc = JsonDocument.Parse(rawText);
                 var rootElement = jsonDoc.RootElement;
 
-                // Jeśli odpowiedź to obiekt posiadający właściwość "tasks"
                 if (rootElement.ValueKind == JsonValueKind.Object && rootElement.TryGetProperty("tasks", out var tasksElement))
                 {
                     string tasksJson = tasksElement.GetRawText();
                     return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(tasksJson, options) ?? new List<ExerciseTaskModel>();
                 }
-                // Jeśli model zwróci pojedynczy obiekt
                 else if (rootElement.ValueKind == JsonValueKind.Object)
                 {
                     var singleItem = JsonSerializer.Deserialize<ExerciseTaskModel>(rawText, options);
                     return singleItem != null ? new List<ExerciseTaskModel> { singleItem } : new List<ExerciseTaskModel>();
                 }
-                // Jeśli model zwróci bezpośrednio tablicę
                 else if (rootElement.ValueKind == JsonValueKind.Array)
                 {
                     return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(rawText, options) ?? new List<ExerciseTaskModel>();

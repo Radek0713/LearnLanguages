@@ -280,7 +280,14 @@ namespace LearnLanguages.Services
             using (var connection = GetConnection())
             {
                 connection.Open();
-                var command = new MySqlCommand("SELECT nazwa FROM slowko WHERE id_tematu = @topicId", connection);
+                // Pobieramy angielskie tłumaczenie z tabeli tlumaczenie (id_jezyka = 1)
+                string query = @"
+            SELECT t.nazwa 
+            FROM tlumaczenie t
+            JOIN slowko s ON t.id_slowka = s.id
+            WHERE s.id_tematu = @topicId AND t.id_jezyka = 1";
+
+                var command = new MySqlCommand(query, connection);
                 command.Parameters.AddWithValue("@topicId", topicId);
 
                 using (var reader = command.ExecuteReader())
