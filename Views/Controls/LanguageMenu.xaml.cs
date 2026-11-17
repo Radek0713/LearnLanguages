@@ -76,5 +76,13 @@ namespace LearnLanguages.Views.Controls
                 mainWindow.MainContentArea.Content = new TasksMenu();
             }
         }
+        private void btn_back_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.MainContentArea.Content = new StartMenu();
+            }
+        }
     }
 }
