@@ -7,221 +7,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <UserControl.Resources>
-        <!-- Styl dla przycisków głównych (niebieskie) -->
-        <Style x:Key="ModernMenuButtonStyle" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="Height" Value="52"/>
-            <Setter Property="Margin" Value="0,8"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="14" 
-                                BorderThickness="0">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" CenterX="150" CenterY="26"/>
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect Color="#2563EB" BlurRadius="15" ShadowDepth="4" Opacity="0.3"/>
-                            </Border.Effect>
-
-                            <Grid>
-                                <!-- Delikatny efekt połysku -->
-                                <Border CornerRadius="14" Opacity="0.12">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="White" Offset="0"/>
-                                            <GradientStop Color="Transparent" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                </Border>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <!-- Najechanie myszką: rozjaśnienie na niebieski -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#3B82F6"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.02" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-
-                            <!-- Kliknięcie -->
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#1D4ED8"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="0.98" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="0.98" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Styl dla przycisku Wróć (szary, po najechaniu zmienia się na inny szary) -->
-        <Style x:Key="ModernBackButtonStyle" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#64748B"/>
-            <Setter Property="Height" Value="52"/>
-            <Setter Property="Margin" Value="0,8"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="14" 
-                                BorderThickness="0">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" CenterX="150" CenterY="26"/>
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect Color="#64748B" BlurRadius="15" ShadowDepth="4" Opacity="0.2"/>
-                            </Border.Effect>
-
-                            <Grid>
-                                <Border CornerRadius="14" Opacity="0.12">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="White" Offset="0"/>
-                                            <GradientStop Color="Transparent" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                </Border>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <!-- Najechanie myszką: jaśniejszy szary (#475569) zamiast niebieskiego -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#475569"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.02" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-
-                            <!-- Kliknięcie (ciemniejszy szary) -->
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#334155"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="0.98" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="0.98" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
-
-    <!-- Tło całego okna: Nowoczesny, głęboki gradient granatowo-indygo -->
+    
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#0F172A" Offset="0.0"/>
-                <GradientStop Color="#1E1B4B" Offset="1.0"/>
-            </LinearGradientBrush>
-        </Grid.Background>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="141*"/>
@@ -230,76 +17,45 @@
             <ColumnDefinition Width="200*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Karta menu na środku z wyraźnym, głębokim cieniem (zmniejszony górny/dolny padding z 35 do 15) -->
-        <Border Grid.Column="2" 
-                Background="White" 
-                CornerRadius="24" 
-                Padding="30,15" 
+        <Border Grid.Column="2"
+                Style="{StaticResource MainCardBorderStyle}"
+                Padding="30,15"
                 VerticalAlignment="Center">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" BlurRadius="40" ShadowDepth="12" Opacity="0.4"/>
-            </Border.Effect>
-
             <StackPanel VerticalAlignment="Center">
-
-                <!-- Nagłówek -->
                 <StackPanel Margin="0,0,0,14" HorizontalAlignment="Center">
-                    <TextBlock Text="🌍 LearnLanguages" 
-                               FontSize="22" 
-                               FontWeight="Bold" 
-                               Foreground="#0F172A" 
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,6"/>
-                    <TextBlock Text="Wybierz sekcję, aby kontynuować naukę" 
-                               FontSize="13" 
-                               Foreground="#64748B" 
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="🌍 LearnLanguages" Style="{StaticResource PageTitleTextStyle}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Text="Wybierz sekcję, aby kontynuować naukę" Style="{StaticResource PageSubtitleTextStyle}" HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Przyciski -->
-                <Button x:Name="btn_calendar" 
-                        Style="{StaticResource ModernMenuButtonStyle}" 
-                        Click="btn_calendar_Click">
+                <Button x:Name="btn_calendar" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_calendar_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock Text="Kalendarz" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="Kalendarz" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_topics" 
-                        Style="{StaticResource ModernMenuButtonStyle}" 
-                        Click="btn_topics_Click">
+                <Button x:Name="btn_topics" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_topics_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📚" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock Text="Tematy" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="Tematy" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_flashcards" 
-                        Style="{StaticResource ModernMenuButtonStyle}" 
-                        Click="btn_flashcards_Click">
+                <Button x:Name="btn_flashcards" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_flashcards_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock Text="Fiszki" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="Fiszki" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_tasks" 
-                        Style="{StaticResource ModernMenuButtonStyle}" 
-                        Click="btn_tasks_Click">
+                <Button x:Name="btn_tasks" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_tasks_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock Text="Zadania" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="Zadania" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <!-- Przycisk Wróć na samym dole -->
-                <Button x:Name="btn_back" 
-                        Content="Wróć" 
-                        Style="{StaticResource ModernBackButtonStyle}" 
-                        Click="btn_back_Click" 
-                        Margin="0,8,0,0"/>
-
+                <Button x:Name="btn_back" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="52" FontSize="15" Margin="0,16,0,0" Click="btn_back_Click"/>
             </StackPanel>
         </Border>
     </Grid>

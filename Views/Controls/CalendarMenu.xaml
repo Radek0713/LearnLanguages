@@ -3,378 +3,132 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:LearnLanguages"
              mc:Ignorable="d" 
              d:DesignHeight="520" d:DesignWidth="850">
 
-    <UserControl.Resources>
-        <!-- Styl dla głównych przycisków w kalendarzu (niebieskie) -->
-        <Style x:Key="ModernCalendarButtonStyle" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="14,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="10" 
-                                BorderThickness="0">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" CenterX="50" CenterY="19"/>
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect Color="#2563EB" BlurRadius="12" ShadowDepth="2" Opacity="0.25"/>
-                            </Border.Effect>
+    <Border Style="{StaticResource MainCardBorderStyle}" Padding="25" Margin="30">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                            <Grid>
-                                <!-- Delikatny efekt połysku -->
-                                <Border CornerRadius="10" Opacity="0.12">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="White" Offset="0"/>
-                                            <GradientStop Color="Transparent" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                </Border>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
+            <!-- Pasek górny: Lewo, Miesiąc/Rok, Prawo -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                        <ControlTemplate.Triggers>
-                            <!-- Zablokowany przycisk (np. Poprzedni w bieżącym miesiącu) -->
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#94A3B8"/>
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/>
-                            </Trigger>
-                            <!-- Najechanie myszką: rozjaśnienie na niebieski -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#3B82F6"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.03" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.03" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
+                <Button x:Name="BtnPrevMonth" Content="&lt; Poprzedni" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Click="Btn_PrevMonth_Click" Grid.Column="0" HorizontalAlignment="Left"/>
 
-                            <!-- Kliknięcie -->
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#1D4ED8"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="0.97" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="0.97" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+                <TextBlock x:Name="TxtMonthYear" Grid.Column="1" Text="Czerwiec 2026"
+                           FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="Segoe UI"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <!-- Specjalny styl dla szarego przycisku Wróć (po najechaniu zmienia się na inny szary, nie niebieski) -->
-        <Style x:Key="ModernBackButtonStyle" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#64748B"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="14,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="10" 
-                                BorderThickness="0">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" CenterX="50" CenterY="19"/>
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect Color="#64748B" BlurRadius="12" ShadowDepth="2" Opacity="0.15"/>
-                            </Border.Effect>
-
-                            <Grid>
-                                <Border CornerRadius="10" Opacity="0.12">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="White" Offset="0"/>
-                                            <GradientStop Color="Transparent" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                </Border>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <!-- Najechanie myszką: jasniejszy szary (#475569) zamiast niebieskiego -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#475569"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.03" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.03" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-
-                            <!-- Kliknięcie (ciemniejszy szary) -->
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#334155"/>
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="0.97" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="0.97" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleX" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ButtonScale" 
-                                                             Storyboard.TargetProperty="ScaleY" 
-                                                             To="1.0" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
-
-    <!-- Tło całego okna: Nowoczesny, głęboki gradient granatowo-indygo -->
-    <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#0F172A" Offset="0.0"/>
-                <GradientStop Color="#1E1B4B" Offset="1.0"/>
-            </LinearGradientBrush>
-        </Grid.Background>
-
-        <!-- Karta kalendarza na środku z głębokim cieniem -->
-        <Border Background="White" 
-                CornerRadius="24" 
-                Padding="25" 
-                Margin="30"
-                VerticalAlignment="Stretch" 
-                HorizontalAlignment="Stretch">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" BlurRadius="40" ShadowDepth="12" Opacity="0.4"/>
-            </Border.Effect>
-
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <!-- Miesiąc i przyciski nawigacji -->
-                    <RowDefinition Height="Auto"/>
-                    <!-- Dni tygodnia (Pon, Wto...) -->
-                    <RowDefinition Height="*"/>
-                    <!-- Siatka dni (UniformGrid) -->
-                    <RowDefinition Height="Auto"/>
-                    <!-- Przycisk Wróć -->
-                </Grid.RowDefinitions>
-
-                <!-- Pasek górny: Lewo, Miesiąc/Rok, Prawo -->
-                <Grid Grid.Row="0" Margin="0,0,0,16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Button x:Name="BtnPrevMonth" Content="&lt; Poprzedni" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_PrevMonth_Click" Grid.Column="0" HorizontalAlignment="Left" Width="105"/>
-
-                    <TextBlock x:Name="TxtMonthYear" Grid.Column="1" Text="Czerwiec 2026" 
-                               FontSize="20" FontWeight="Bold" Foreground="#0F172A" FontFamily="Segoe UI"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                    <Button Grid.Column="2" Content="Następny &gt;" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_NextMonth_Click" HorizontalAlignment="Right" Width="105"/>
-                </Grid>
-
-                <!-- Nagłówki dni tygodnia -->
-                <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
-                    <TextBlock Text="Pon" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Wto" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Śro" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Czw" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Pią" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Sob" FontWeight="Bold" Foreground="#64748B" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Nie" FontWeight="Bold" Foreground="#EF4444" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
-                </UniformGrid>
-
-                <!-- NASZ AUTORSKI KALENDARZ -->
-                <ItemsControl x:Name="CalendarItemsControl" Grid.Row="2">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="7" Rows="6"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <!-- Pojedyncza kratka dnia z wyróżnieniem dzisiejszej daty -->
-                            <Border CornerRadius="10" Margin="3">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                        <Setter Property="Background" Value="#F8FAFC"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
-                                                <Setter Property="BorderBrush" Value="#2563EB"/>
-                                                <Setter Property="BorderThickness" Value="2"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-
-                                <Grid Margin="6">
-                                    <!-- Półprzezroczysty szary blok dla dni spoza obecnego miesiąca -->
-                                    <Border Background="#E2E8F0" CornerRadius="8" Opacity="0.5">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                    </Border>
-
-                                    <Grid>
-                                        <!-- LEWA STRONA: Słówka na dziś/przyszłość (niebieski) oraz zaległe (pomarańczowy) -->
-                                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <!-- Niebieski pasek: zaplanowane słówka -->
-                                            <Border Background="#2563EB" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasWords}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-
-                                                <TextBlock Text="{Binding WordCount, StringFormat='{}{0} słówek'}" 
-                                                           Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
-                                            </Border>
-
-                                            <!-- Pomarańczowy pasek: zaległe słówka -->
-                                            <Border Background="#EA580C" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Setter Property="Margin" Value="0"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasOverdueWords}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                            <!-- Odstęp 2px tylko wtedy, gdy nad nim wyświetla się też niebieski pasek -->
-                                                            <DataTrigger Binding="{Binding HasWords}" Value="True">
-                                                                <Setter Property="Margin" Value="0,2,0,0"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-
-                                                <TextBlock Text="{Binding OverdueCount, StringFormat='{}{0} zaległych'}" 
-                                                           Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <!-- PRAWA STRONA: Numer dnia -->
-                                        <TextBlock Text="{Binding DayNumber}" 
-                                                   FontWeight="Bold" FontSize="14" Foreground="#1E293B" FontFamily="Segoe UI"
-                                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- Przycisk Wróć -->
-                <Button Grid.Row="3" Content="Wróć" Style="{StaticResource ModernBackButtonStyle}" 
-                        HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click" Height="38" VerticalAlignment="Top" Width="101"/>
+                <Button Grid.Column="2" Content="Następny &gt;" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Click="Btn_NextMonth_Click" HorizontalAlignment="Right"/>
             </Grid>
-        </Border>
-    </Grid>
+
+            <!-- Nagłówki dni tygodnia -->
+            <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
+                <TextBlock Text="Pon" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Wto" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Śro" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Czw" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Pią" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Sob" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+                <TextBlock Text="Nie" FontWeight="Bold" Foreground="{StaticResource DangerRedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
+            </UniformGrid>
+
+            <!-- Siatka dni kalendarza -->
+            <ItemsControl x:Name="CalendarItemsControl" Grid.Row="2">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="7" Rows="6"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="10" Margin="3">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="Background" Value="{StaticResource SubCardBackgroundBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBlueBrush}"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <Grid Margin="6">
+                                <!-- Wyszarzenie dni spoza bieżącego miesiąca -->
+                                <Border Background="{StaticResource CardBorderBrush}" CornerRadius="8" Opacity="0.5">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+
+                                <Grid>
+                                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <!-- Niebieski pasek: zaplanowane słówka -->
+                                        <Border Background="{StaticResource PrimaryBlueBrush}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasWords}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding WordCount, StringFormat='{}{0} słówek'}" Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
+                                        </Border>
+
+                                        <!-- Pomarańczowy pasek: zaległe słówka -->
+                                        <Border Background="{StaticResource WarningOrangeBrush}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Setter Property="Margin" Value="0"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasOverdueWords}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding HasWords}" Value="True">
+                                                            <Setter Property="Margin" Value="0,2,0,0"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding OverdueCount, StringFormat='{}{0} zaległych'}" Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding DayNumber}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" Width="101" HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click"/>
+        </Grid>
+    </Border>
 </UserControl>

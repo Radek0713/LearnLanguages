@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Główne tło aplikacji (ciemny gradient granatowo-indygo) -->
+    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#0F172A" Offset="0.0"/>
+        <GradientStop Color="#1E1B4B" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Delikatny połysk na przyciskach -->
+    <LinearGradientBrush x:Key="ButtonGlossGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="White" Offset="0"/>
+        <GradientStop Color="Transparent" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Kolory przewodnie (niebieski) -->
+    <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#2563EB"/>
+    <SolidColorBrush x:Key="PrimaryBlueHoverBrush" Color="#3B82F6"/>
+    <SolidColorBrush x:Key="PrimaryBluePressedBrush" Color="#1D4ED8"/>
+
+    <!-- Kolory neutralne / przyciski Wróć (szary) -->
+    <SolidColorBrush x:Key="SecondaryGrayBrush" Color="#64748B"/>
+    <SolidColorBrush x:Key="SecondaryGrayHoverBrush" Color="#475569"/>
+    <SolidColorBrush x:Key="SecondaryGrayPressedBrush" Color="#334155"/>
+
+    <!-- Kolory statusów (sukces, zaległości, błąd) -->
+    <SolidColorBrush x:Key="SuccessGreenBrush" Color="#10B981"/>
+    <SolidColorBrush x:Key="SuccessGreenHoverBrush" Color="#059669"/>
+    <SolidColorBrush x:Key="WarningOrangeBrush" Color="#EA580C"/>
+    <SolidColorBrush x:Key="WarningOrangeHoverBrush" Color="#C2410C"/>
+    <SolidColorBrush x:Key="DangerRedBrush" Color="#EF4444"/>
+
+    <!-- Tła kart i obramowania -->
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SubCardBackgroundBrush" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="InputBorderBrush" Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="SoftBlueBackgroundBrush" Color="#EFF6FF"/>
+    <SolidColorBrush x:Key="SoftBlueBorderBrush" Color="#BFDBFE"/>
+    <SolidColorBrush x:Key="SoftBlueHoverBorderBrush" Color="#93C5FD"/>
+
+    <!-- Kolory tekstów -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0F172A"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#1E293B"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#64748B"/>
+    <SolidColorBrush x:Key="TextLightMutedBrush" Color="#94A3B8"/>
+
+</ResourceDictionary>

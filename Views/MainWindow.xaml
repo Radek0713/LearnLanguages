@@ -5,10 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LearnLanguages"
         mc:Ignorable="d"
-        Title="LearnLanguages" Height="650" Width="850"
+        Title="LearnLanguages"
+        Width="840"
+        Height="680"
+        MinWidth="840"
+        MinHeight="680"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen"
-        Background="#FAF7F2">
+        Background="#0F172A">
     <Grid>
-        <ContentControl x:Name="MainContentArea" Margin="0"/>
+        <ContentControl x:Name="MainContentArea"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Margin="0"/>
     </Grid>
 </Window>

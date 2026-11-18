@@ -3,189 +3,115 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:LearnLanguages.Views.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="620" d:DesignWidth="880">
 
-    <UserControl.Resources>
-        <!-- Wspólny nowoczesny styl dla wszystkich przycisków w widoku -->
-        <Style x:Key="ModernButtonStyle" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#64748B"/>
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Padding" Value="24,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="12" BorderThickness="0">
-                            <Border.Effect>
-                                <DropShadowEffect Color="#64748B" BlurRadius="10" ShadowDepth="2" Opacity="0.15"/>
-                            </Border.Effect>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+    <Border Style="{StaticResource MainCardBorderStyle}" Padding="28,18" Margin="120,20" MaxWidth="780">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <!-- Nagłówek -->
-            <RowDefinition Height="*"/>
-            <!-- Fiszka -->
-            <RowDefinition Height="Auto"/>
-            <!-- Przyciski Oceny/Obracania -->
-            <RowDefinition Height="Auto"/>
-            <!-- Przycisk Wróć -->
-        </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Margin="0,0,0,10" HorizontalAlignment="Center">
+                <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="TxtTopicInfo" Text="Dział • Temat" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16" HorizontalAlignment="Center">
-            <TextBlock Text="Nauka: Fiszki" 
-               FontSize="24" 
-               FontWeight="Bold" 
-               Foreground="Black" 
-               HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                    <TextBlock x:Name="TxtProgress" Text="Karta 1 z 1" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBlueBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
-            <TextBlock x:Name="TxtTopicInfo" 
-               Text="Dział • Temat" 
-               FontSize="15" 
-               FontWeight="SemiBold" 
-               Foreground="#64748B" 
-               Margin="0,4,0,0" 
-               HorizontalAlignment="Center"/>
-
-            <!-- Licznik i pasek postępu -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                <TextBlock x:Name="TxtProgress" 
-                   Text="Karta 1 z 1" 
-                   FontSize="13" 
-                   FontWeight="SemiBold" 
-                   Foreground="#2563EB" 
-                   VerticalAlignment="Center"
-                   Margin="0,0,10,0"/>
-
-                <ProgressBar x:Name="SessionProgressBar" 
-                     Width="160" 
-                     Height="8" 
-                     Minimum="0" 
-                     Maximum="100" 
-                     Value="0"
-                     VerticalAlignment="Center">
-                    <ProgressBar.Template>
-                        <ControlTemplate TargetType="ProgressBar">
-                            <Border Background="#E2E8F0" CornerRadius="4">
-                                <Grid x:Name="PART_Track">
-                                    <Border x:Name="PART_Indicator" 
-                                    Background="#2563EB" 
-                                    CornerRadius="4" 
-                                    HorizontalAlignment="Left"/>
-                                </Grid>
-                            </Border>
-                        </ControlTemplate>
-                    </ProgressBar.Template>
-                </ProgressBar>
+                    <ProgressBar x:Name="SessionProgressBar" Width="160" Height="8" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center">
+                        <ProgressBar.Template>
+                            <ControlTemplate TargetType="ProgressBar">
+                                <Border Background="{StaticResource CardBorderBrush}" CornerRadius="4">
+                                    <Grid x:Name="PART_Track">
+                                        <Border x:Name="PART_Indicator" Background="{StaticResource PrimaryBlueBrush}" CornerRadius="4" HorizontalAlignment="Left"/>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </ProgressBar.Template>
+                    </ProgressBar>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
 
-        <!-- GŁÓWNA STREFA FISZKI -->
-        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="5" 
-                Background="White" Width="350" Height="350" Padding="4">
-            <Border.Effect>
-                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
-            </Border.Effect>
+            <!-- Główna strefa fiszki (bez zmian w wymiarach i przycinaniu) -->
+            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="5"
+                    Background="White" Width="350" Height="350" Padding="4">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+                </Border.Effect>
 
-            <Grid>
-                <!-- AWERS (Przód) -->
-                <Grid x:Name="FlashcardFront" Visibility="Visible">
-                    <!-- Tekst widoczny TYLKO gdy ImgFront.Source == null -->
-                    <TextBlock Text="[Brak grafiki Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Source, ElementName=ImgFront}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                <Grid>
+                    <Grid x:Name="FlashcardFront" Visibility="Visible">
+                        <TextBlock Text="[Brak grafiki Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source, ElementName=ImgFront}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
-                    <Image x:Name="ImgFront" Stretch="Uniform">
-                        <Image.Clip>
-                            <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
-                        </Image.Clip>
-                    </Image>
+                        <Image x:Name="ImgFront" Stretch="Uniform">
+                            <Image.Clip>
+                                <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
+                            </Image.Clip>
+                        </Image>
+                    </Grid>
+
+                    <Grid x:Name="FlashcardBack" Visibility="Collapsed">
+                        <TextBlock Text="[Brak grafiki Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source, ElementName=ImgBack}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Image x:Name="ImgBack" Stretch="Uniform">
+                            <Image.Clip>
+                                <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
+                            </Image.Clip>
+                        </Image>
+                    </Grid>
                 </Grid>
+            </Border>
 
-                <!-- REWERS (Tył z dwiema nazwami) -->
-                <Grid x:Name="FlashcardBack" Visibility="Collapsed">
-                    <!-- Tekst widoczny TYLKO gdy ImgBack.Source == null -->
-                    <TextBlock Text="[Brak grafiki Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Source, ElementName=ImgBack}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+            <!-- Przyciski akcji -->
+            <Grid Grid.Row="2" Margin="0,14,0,8" HorizontalAlignment="Center">
+                <Button x:Name="BtnFlip" Content="Obróć fiszkę"
+                        Style="{StaticResource BaseModernButtonStyle}"
+                        FontSize="16" Height="46" Padding="32,0"
+                        Background="CornflowerBlue"
+                        Click="BtnFlip_Click"/>
 
-                    <Image x:Name="ImgBack" Stretch="Uniform">
-                        <Image.Clip>
-                            <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
-                        </Image.Clip>
-                    </Image>
-                </Grid>
+                <StackPanel x:Name="EvaluationButtons" Orientation="Horizontal" Visibility="Collapsed">
+                    <Button x:Name="BtnBad" Content="Źle"
+                            Style="{StaticResource BaseModernButtonStyle}"
+                            FontSize="16" Height="46" MinWidth="120"
+                            Background="IndianRed" Margin="0,0,20,0"
+                            Click="BtnBad_Click"/>
+
+                    <Button x:Name="BtnGood" Content="Dobrze"
+                            Style="{StaticResource BaseModernButtonStyle}"
+                            FontSize="16" Height="46" MinWidth="120"
+                            Background="MediumSeaGreen"
+                            Click="BtnGood_Click"/>
+                </StackPanel>
             </Grid>
-        </Border>
 
-        <!-- PRZYCISKI AKCJI -->
-        <Grid Grid.Row="2" Margin="0,30,0,30" HorizontalAlignment="Center">
-            <!-- Przycisk Obróć -->
-            <Button x:Name="BtnFlip" Content="Obróć fiszkę" 
-                    Style="{StaticResource ModernButtonStyle}"
-                    FontSize="16" Height="46" Padding="32,0"
-                    Background="CornflowerBlue" 
-                    Click="BtnFlip_Click"/>
-
-            <!-- Przyciski Dobrze/Źle (Ukryte na starcie) -->
-            <StackPanel x:Name="EvaluationButtons" Orientation="Horizontal" Visibility="Collapsed">
-                <Button x:Name="BtnBad" Content="Źle" 
-                        Style="{StaticResource ModernButtonStyle}"
-                        FontSize="16" Height="46" MinWidth="120"
-                        Background="IndianRed" Margin="0,0,20,0" 
-                        Click="BtnBad_Click"/>
-
-                <Button x:Name="BtnGood" Content="Dobrze" 
-                        Style="{StaticResource ModernButtonStyle}"
-                        FontSize="16" Height="46" MinWidth="120"
-                        Background="MediumSeaGreen" 
-                        Click="BtnGood_Click"/>
-            </StackPanel>
+            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="42" Padding="24,0" HorizontalAlignment="Left" Click="Btn_Back_Click"/>
         </Grid>
-
-        <!-- PRZYCISK WRÓĆ -->
-        <Button Grid.Row="3" Content="Wróć" 
-                Style="{StaticResource ModernButtonStyle}"
-                HorizontalAlignment="Left" 
-                Click="Btn_Back_Click"/>
-    </Grid>
+    </Border>
 </UserControl>
