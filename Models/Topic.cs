@@ -12,5 +12,7 @@ namespace LearnLanguages.Models
         public int DepartmentId { get; set; }
         public string Name { get; set; }
         public bool IsSelected { get; set; }
+        public int WordsCount { get; set; }
+        public string DisplayName => $"{Name} ({WordsCount})";
     }
 }

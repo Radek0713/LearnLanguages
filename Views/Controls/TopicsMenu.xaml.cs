@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using LearnLanguages.Models;
 using LearnLanguages.Services;
 using LearnLanguages.Views;
@@ -26,37 +15,47 @@ namespace LearnLanguages.Views.Controls
         public TopicsMenu()
         {
             InitializeComponent();
+            LoadSelectedTopics();
             LoadDepartments();
+        }
+        private void LoadSelectedTopics()
+        {
+            List<SelectedTopicItem> selected = DatabaseService.GetSelectedTopics();
+
+            TxtSelectedHeader.Text = $"Aktualnie wybrane tematy ({selected.Count}):";
+            SelectedTopicsItemsControl.ItemsSource = selected;
+
+            TxtNoSelectedTopics.Visibility = selected.Count == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
         private void LoadDepartments()
         {
-            // Pobieramy dane z MySQL i przypisujemy je do ListBoxa
-            DepartmentsListBox.ItemsSource = DatabaseService.GetDepartments();
+            var departments = DatabaseService.GetDepartments();
+            DepartmentsListBox.ItemsSource = departments;
+
+            // Automatyczne zaznaczenie pierwszego działu, aby prawa kolumna nie była pusta na starcie
+            if (departments != null && departments.Count > 0)
+            {
+                DepartmentsListBox.SelectedIndex = 0;
+            }
         }
         private void DepartmentsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Wyciągamy kliknięty obiekt (rzutujemy go na klasę Department)
             if (DepartmentsListBox.SelectedItem is Department selectedDepartment)
             {
-                // Pobieramy tematy z bazy na podstawie ID klikniętego działu
-                // i wrzucamy je do kontrolki po prawej stronie
                 TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedDepartment.Id);
             }
         }
         private void AddTopic_Click(object sender, RoutedEventArgs e)
         {
-            // Pobieramy przycisk, który został kliknięty
-            if (sender is Button clickedButton)
+            if (sender is Button clickedButton && clickedButton.Tag is Topic selectedTopic)
             {
-                // Z XAML (atrybut Tag="{Binding}") wyciągamy cały obiekt Topic
-                if (clickedButton.Tag is Topic selectedTopic)
-                {
-                    // Zapisujemy zmianę w bazie danych MySQL
-                    DatabaseService.MarkTopicAsSelected(selectedTopic.Id);
+                DatabaseService.MarkTopicAsSelected(selectedTopic.Id);
 
-                    // Odświeżamy listę tematów, żeby przycisk zmienił się na wyszarzony "Już dodane"
-                    TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedTopic.DepartmentId);
-                }
+                // Odświeżamy zarówno górny spis wybranych tematów, jak i listę po prawej
+                LoadSelectedTopics();
+                TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedTopic.DepartmentId);
             }
         }
         private void Btn_Back_Click(object sender, RoutedEventArgs e)

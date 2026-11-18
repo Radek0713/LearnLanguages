@@ -53,27 +53,44 @@ namespace LearnLanguages.Services
         public static List<Topic> GetTopicsByDepartment(int departmentId)
         {
             var topics = new List<Topic>();
+
             using (var connection = GetConnection())
             {
                 connection.Open();
-                var command = new MySqlCommand("SELECT id, id_dzialu, nazwa, czy_wybrany FROM temat WHERE id_dzialu = @deptId", connection);
-                command.Parameters.AddWithValue("@deptId", departmentId);
 
-                using (var reader = command.ExecuteReader())
+                string query = @"
+            SELECT 
+                tem.id AS Id,
+                tem.id_dzialu AS DepartmentId,
+                tem.nazwa AS Name,
+                tem.czy_wybrany AS IsSelected,
+                COUNT(t.id) AS WordsCount
+            FROM temat tem
+            LEFT JOIN slowko s ON s.id_tematu = tem.id
+            LEFT JOIN tlumaczenie t ON t.id_slowka = s.id AND t.id_jezyka = 1
+            WHERE tem.id_dzialu = @departmentId
+            GROUP BY tem.id, tem.id_dzialu, tem.nazwa, tem.czy_wybrany
+            ORDER BY tem.nazwa ASC";
+
+                var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@departmentId", departmentId);
+
+                using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         topics.Add(new Topic
                         {
-                            Id = reader.GetInt32("id"),
-                            DepartmentId = reader.GetInt32("id_dzialu"),
-                            Name = reader.GetString("nazwa"),
-                            // MySQL przechowuje boolean jako TINYINT(1), GetBoolean automatycznie to zmapuje
-                            IsSelected = reader.GetBoolean("czy_wybrany")
+                            Id = reader.GetInt32("Id"),
+                            DepartmentId = reader.GetInt32("DepartmentId"),
+                            Name = reader.GetString("Name"),
+                            IsSelected = reader.GetBoolean("IsSelected"),
+                            WordsCount = Convert.ToInt32(reader["WordsCount"])
                         });
                     }
                 }
             }
+
             return topics;
         }
 
@@ -393,6 +410,42 @@ namespace LearnLanguages.Services
                 var result = command.ExecuteScalar();
                 return result?.ToString() ?? string.Empty;
             }
+        }
+        public static List<SelectedTopicItem> GetSelectedTopics()
+        {
+            var selectedTopics = new List<SelectedTopicItem>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                string query = @"
+            SELECT 
+                tem.id AS TopicId,
+                dz.nazwa AS CategoryName,
+                tem.nazwa AS TopicName
+            FROM temat tem
+            JOIN dzial dz ON tem.id_dzialu = dz.id
+            WHERE tem.czy_wybrany = 1
+            ORDER BY dz.nazwa ASC, tem.nazwa ASC";
+
+                var cmd = new MySqlCommand(query, connection);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        selectedTopics.Add(new SelectedTopicItem
+                        {
+                            TopicId = reader.GetInt32("TopicId"),
+                            CategoryName = reader.GetString("CategoryName"),
+                            TopicName = reader.GetString("TopicName")
+                        });
+                    }
+                }
+            }
+
+            return selectedTopics;
         }
     }
 }
