@@ -3,8 +3,8 @@
 
     <!-- Główne tło aplikacji (ciemny gradient granatowo-indygo) -->
     <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#0F172A" Offset="0.0"/>
-        <GradientStop Color="#1E1B4B" Offset="1.0"/>
+        <GradientStop Color="#334155" Offset="0.0"/>
+        <GradientStop Color="#312E81" Offset="1.0"/>
     </LinearGradientBrush>
 
     <!-- Delikatny połysk na przyciskach -->
