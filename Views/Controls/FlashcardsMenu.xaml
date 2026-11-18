@@ -53,7 +53,7 @@
             <!-- Przycisk Wróć -->
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,20" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="0" Margin="0,0,0,16" HorizontalAlignment="Center">
             <TextBlock Text="Nauka: Fiszki" 
                FontSize="24" 
                FontWeight="Bold" 
@@ -67,6 +67,38 @@
                Foreground="#64748B" 
                Margin="0,4,0,0" 
                HorizontalAlignment="Center"/>
+
+            <!-- Licznik i pasek postępu -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                <TextBlock x:Name="TxtProgress" 
+                   Text="Karta 1 z 1" 
+                   FontSize="13" 
+                   FontWeight="SemiBold" 
+                   Foreground="#2563EB" 
+                   VerticalAlignment="Center"
+                   Margin="0,0,10,0"/>
+
+                <ProgressBar x:Name="SessionProgressBar" 
+                     Width="160" 
+                     Height="8" 
+                     Minimum="0" 
+                     Maximum="100" 
+                     Value="0"
+                     VerticalAlignment="Center">
+                    <ProgressBar.Template>
+                        <ControlTemplate TargetType="ProgressBar">
+                            <Border Background="#E2E8F0" CornerRadius="4">
+                                <Grid x:Name="PART_Track">
+                                    <Border x:Name="PART_Indicator" 
+                                    Background="#2563EB" 
+                                    CornerRadius="4" 
+                                    HorizontalAlignment="Left"/>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </ProgressBar.Template>
+                </ProgressBar>
+            </StackPanel>
         </StackPanel>
 
         <!-- GŁÓWNA STREFA FISZKI -->

@@ -175,7 +175,51 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
-        public static List<FlashcardModel> GetFlashcardsForToday()
+        public static List<TopicReviewSummary> GetTopicReviewSummariesForToday()
+        {
+            var summaries = new List<TopicReviewSummary>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                string query = @"
+            SELECT 
+                tem.id AS TopicId,
+                tem.nazwa AS TopicName,
+                dz.nazwa AS CategoryName,
+                SUM(CASE WHEN DATE(t.data_nastepnej_powtorki) = CURDATE() THEN 1 ELSE 0 END) AS TodayCount,
+                SUM(CASE WHEN DATE(t.data_nastepnej_powtorki) < CURDATE() THEN 1 ELSE 0 END) AS OverdueCount
+            FROM tlumaczenie t
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN temat tem ON s.id_tematu = tem.id
+            JOIN dzial dz ON tem.id_dzialu = dz.id
+            WHERE DATE(t.data_nastepnej_powtorki) <= CURDATE()
+              AND t.id_jezyka = 1
+            GROUP BY tem.id, tem.nazwa, dz.nazwa
+            ORDER BY OverdueCount DESC, dz.nazwa ASC, tem.nazwa ASC";
+
+                var cmd = new MySqlCommand(query, connection);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        summaries.Add(new TopicReviewSummary
+                        {
+                            TopicId = reader.GetInt32("TopicId"),
+                            TopicName = reader.GetString("TopicName"),
+                            CategoryName = reader.GetString("CategoryName"),
+                            TodayCount = Convert.ToInt32(reader["TodayCount"]),
+                            OverdueCount = Convert.ToInt32(reader["OverdueCount"])
+                        });
+                    }
+                }
+            }
+
+            return summaries;
+        }
+        public static List<FlashcardModel> GetFlashcardsForToday(int? topicId = null, bool onlyOverdue = false)
         {
             var flashcards = new List<FlashcardModel>();
 
@@ -183,8 +227,15 @@ namespace LearnLanguages.Services
             {
                 connection.Open();
 
-                // Łączymy tlumaczenie -> slowko -> temat -> dzial
-                string query = @"
+                string dateCondition = onlyOverdue
+            ? "DATE(t.data_nastepnej_powtorki) < CURDATE()"
+            : "DATE(t.data_nastepnej_powtorki) <= CURDATE()";
+
+                string topicCondition = topicId.HasValue
+                    ? "AND tem.id = @topicId"
+                    : "";
+
+                string query = $@"
             SELECT 
                 t.id AS TranslationId,
                 tem.id AS TopicId,
@@ -200,11 +251,16 @@ namespace LearnLanguages.Services
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
-            WHERE DATE(t.data_nastepnej_powtorki) <= CURDATE()
+            WHERE {dateCondition}
               AND t.id_jezyka = 1
+              {topicCondition}
             ORDER BY t.data_nastepnej_powtorki ASC";
 
                 var cmd = new MySqlCommand(query, connection);
+                if (topicId.HasValue)
+                {
+                    cmd.Parameters.AddWithValue("@topicId", topicId.Value);
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {

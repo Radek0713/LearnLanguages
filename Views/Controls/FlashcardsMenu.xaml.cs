@@ -14,11 +14,16 @@ namespace LearnLanguages.Views.Controls
     {
         private List<FlashcardModel> _flashcardsQueue;
         private FlashcardModel _currentFlashcard;
-        public FlashcardsMenu()
+        private int _totalCardsCount;
+        private int _currentCardNumber;
+        public FlashcardsMenu(int? topicId = null, bool onlyOverdue = false)
         {
             InitializeComponent();
-            _flashcardsQueue = DatabaseService.GetFlashcardsForToday(); // Pobieramy wszystkie fiszki na dzisiaj z bazy
-            LoadNextFlashcard(); // Przygotowujemy pierwszą fiszkę na start
+            _flashcardsQueue = DatabaseService.GetFlashcardsForToday(topicId, onlyOverdue);
+            _totalCardsCount = _flashcardsQueue?.Count ?? 0;
+            _currentCardNumber = 0;
+
+            LoadNextFlashcard();
         }
 
         private void BtnFlip_Click(object sender, RoutedEventArgs e)
@@ -60,18 +65,35 @@ namespace LearnLanguages.Views.Controls
 
         private void LoadNextFlashcard()
         {
-            // 1. Sprawdzamy, czy są jeszcze jakieś fiszki w kolejce
+            // 1. Sprawdzamy, czy są jeszcze jakieś fiszki w bieżącej kolejce
             if (_flashcardsQueue == null || _flashcardsQueue.Count == 0)
             {
-                MessageBox.Show("Świetna robota! Brak słówek na dziś.", "Koniec", MessageBoxButton.OK, MessageBoxImage.Information);
-                ReturnToMenu();
+                int remainingToday = DatabaseService.GetReviewCountForToday();
+
+                if (remainingToday == 0)
+                {
+                    MessageBox.Show("Świetna robota! Brak słówek na dziś.",
+                                    "Koniec nauki", MessageBoxButton.OK, MessageBoxImage.Information);
+                    NavigateTo(new LanguageMenu());
+                }
+                else
+                {
+                    MessageBox.Show($"Ukończono ten zestaw! Pozostało jeszcze {remainingToday} słówek na dziś w innych tematach.",
+                                    "Zestaw ukończony", MessageBoxButton.OK, MessageBoxImage.Information);
+                    NavigateTo(new FlashcardsTopicsMenu());
+                }
                 return;
             }
 
             // 2. Wyciągamy pierwszą z brzegu fiszkę i usuwamy z kolejki (żeby się nie powtarzała)
+            _currentCardNumber++;
             _currentFlashcard = _flashcardsQueue[0];
             _flashcardsQueue.RemoveAt(0);
+
             TxtTopicInfo.Text = $"{_currentFlashcard.CategoryName} • {_currentFlashcard.TopicName}";
+            TxtProgress.Text = $"Karta {_currentCardNumber} z {_totalCardsCount}";
+            SessionProgressBar.Maximum = _totalCardsCount;
+            SessionProgressBar.Value = _currentCardNumber;
 
             // 3. Budujemy absolutne ścieżki do obrazków na dysku
             // Przyjmujemy, że aplikacja startuje np. z folderu bin/Debug, 
@@ -89,8 +111,7 @@ namespace LearnLanguages.Views.Controls
             LoadImageSafe(ImgFront, polPath);
             LoadImageSafe(ImgBack, engPath);
 
-            // 5. Reset interfejsu
-            // Reset interfejsu dla nowej karty
+            // 5. Reset interfejsu dla nowej karty
             FlashcardFront.Visibility = Visibility.Visible;
             FlashcardBack.Visibility = Visibility.Collapsed;
 
@@ -119,22 +140,18 @@ namespace LearnLanguages.Views.Controls
             }
         }
 
-        private void ReturnToMenu()
+        private void NavigateTo(UserControl nextView)
         {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
+            var mainWindow = (Window.GetWindow(this) ?? Application.Current.MainWindow) as MainWindow;
             if (mainWindow != null)
             {
-                mainWindow.MainContentArea.Content = new LanguageMenu();
+                mainWindow.MainContentArea.Content = nextView;
             }
         }
 
         private void Btn_Back_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.MainContentArea.Content = new LanguageMenu();
-            }
+            NavigateTo(new FlashcardsTopicsMenu());
         }
     }
 }
