@@ -47,6 +47,11 @@
                         </Border>
 
                         <ControlTemplate.Triggers>
+                            <!-- Zablokowany przycisk (np. Poprzedni w bieżącym miesiącu) -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#94A3B8"/>
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
                             <!-- Najechanie myszką: rozjaśnienie na niebieski -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Background" Value="#3B82F6"/>
@@ -252,7 +257,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Content="&lt; Poprzedni" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_PrevMonth_Click" Grid.Column="0" HorizontalAlignment="Left" Width="105"/>
+                    <Button x:Name="BtnPrevMonth" Content="&lt; Poprzedni" Style="{StaticResource ModernCalendarButtonStyle}" Click="Btn_PrevMonth_Click" Grid.Column="0" HorizontalAlignment="Left" Width="105"/>
 
                     <TextBlock x:Name="TxtMonthYear" Grid.Column="1" Text="Czerwiec 2026" 
                                FontSize="20" FontWeight="Bold" Foreground="#0F172A" FontFamily="Segoe UI"
@@ -276,16 +281,28 @@
                 <ItemsControl x:Name="CalendarItemsControl" Grid.Row="2">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <!-- Siatka 7 kolumn (dni) i 6 wierszy (tygodni) -->
                             <UniformGrid Columns="7" Rows="6"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- Wygląd pojedynczej kratki dnia z zaokrąglonymi rogami i delikatnym obramowaniem -->
-                            <Border BorderBrush="#E2E8F0" BorderThickness="1" Background="#F8FAFC" CornerRadius="10" Margin="3">
-                                <Grid Margin="6">
+                            <!-- Pojedyncza kratka dnia z wyróżnieniem dzisiejszej daty -->
+                            <Border CornerRadius="10" Margin="3">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                <Setter Property="BorderBrush" Value="#2563EB"/>
+                                                <Setter Property="BorderThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
 
+                                <Grid Margin="6">
                                     <!-- Półprzezroczysty szary blok dla dni spoza obecnego miesiąca -->
                                     <Border Background="#E2E8F0" CornerRadius="8" Opacity="0.5">
                                         <Border.Style>
@@ -301,23 +318,47 @@
                                     </Border>
 
                                     <Grid>
-                                        <!-- LEWA STRONA: Kółeczko z pełnym napisem słówek -->
-                                        <Border Background="#2563EB" CornerRadius="6" Padding="6,2" 
-                                                HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasWords}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
+                                        <!-- LEWA STRONA: Słówka na dziś/przyszłość (niebieski) oraz zaległe (pomarańczowy) -->
+                                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <!-- Niebieski pasek: zaplanowane słówka -->
+                                            <Border Background="#2563EB" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasWords}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
 
-                                            <TextBlock Text="{Binding WordCount, StringFormat='{}{0} słówek'}" 
-                                                       Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
-                                        </Border>
+                                                <TextBlock Text="{Binding WordCount, StringFormat='{}{0} słówek'}" 
+                                                           Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
+                                            </Border>
+
+                                            <!-- Pomarańczowy pasek: zaległe słówka -->
+                                            <Border Background="#EA580C" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Setter Property="Margin" Value="0"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasOverdueWords}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <!-- Odstęp 2px tylko wtedy, gdy nad nim wyświetla się też niebieski pasek -->
+                                                            <DataTrigger Binding="{Binding HasWords}" Value="True">
+                                                                <Setter Property="Margin" Value="0,2,0,0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <TextBlock Text="{Binding OverdueCount, StringFormat='{}{0} zaległych'}" 
+                                                           Foreground="White" FontWeight="Bold" FontSize="10" FontFamily="Segoe UI"/>
+                                            </Border>
+                                        </StackPanel>
 
                                         <!-- PRAWA STRONA: Numer dnia -->
                                         <TextBlock Text="{Binding DayNumber}" 

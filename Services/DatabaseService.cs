@@ -1,7 +1,8 @@
-﻿using System;
-using DotNetEnv;
-using MySql.Data.MySqlClient;
+﻿using DotNetEnv;
 using LearnLanguages.Models;
+using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
+using System;
 using System.Collections.Generic;
 
 namespace LearnLanguages.Services
@@ -116,6 +117,7 @@ namespace LearnLanguages.Services
             FROM tlumaczenie 
             WHERE YEAR(data_nastepnej_powtorki) = @year 
               AND MONTH(data_nastepnej_powtorki) = @month
+              AND DATE(data_nastepnej_powtorki) >= CURDATE()
               AND id_jezyka = 1
             GROUP BY DATE(data_nastepnej_powtorki)", connection);
 
@@ -124,14 +126,12 @@ namespace LearnLanguages.Services
 
                 using (var reader = cmd.ExecuteReader())
                 {
-                    // 1. MUSI tu być pętla while, która przesuwa "kursor" bazy na kolejny wiersz!
                     while (reader.Read())
                     {
                         if (!reader.IsDBNull(reader.GetOrdinal("review_date")))
                         {
                             // 2. Bezpieczna konwersja (radzi sobie ze specyficznymi typami MySqlDateTime)
                             DateTime date = Convert.ToDateTime(reader["review_date"]);
-
                             // 3. Bezpieczna konwersja BIGINT z COUNT(*) na zwykłego inta
                             int count = Convert.ToInt32(reader["count"]);
 
@@ -141,6 +141,21 @@ namespace LearnLanguages.Services
                 }
             }
             return result;
+        }
+        public static int GetOverdueReviewCount()
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*) 
+            FROM tlumaczenie 
+            WHERE DATE(data_nastepnej_powtorki) < CURDATE() 
+              AND id_jezyka = 1", connection);
+
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
         }
         public static int GetReviewCountForToday() // dla funkcji z okienkiem czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
         {
@@ -153,7 +168,7 @@ namespace LearnLanguages.Services
                 var cmd = new MySqlCommand(@"
             SELECT COUNT(*) 
             FROM tlumaczenie 
-            WHERE DATE(data_nastepnej_powtorki) = CURDATE() 
+            WHERE DATE(data_nastepnej_powtorki) <= CURDATE() 
               AND id_jezyka = 1", connection);
 
                 // ExecuteScalar zwraca pierwszy z brzegu wynik jako obiekt, więc bezpiecznie konwertujemy
@@ -172,19 +187,22 @@ namespace LearnLanguages.Services
                 string query = @"
             SELECT 
                 t.id AS TranslationId,
+                tem.id AS TopicId,
                 dz.nazwa AS CategoryName,
                 tem.nazwa AS TopicName,
                 s.grafika AS PolImageName,
                 t.grafika AS EngImageName,
                 t.wspolczynnik_latwosci AS EasinessFactor,
                 t.odstep_powtorek AS IntervalDays,
-                t.liczba_poprawnych_powtorek AS Repetitions
+                t.liczba_poprawnych_powtorek AS Repetitions,
+                t.data_nastepnej_powtorki AS NextReviewDate
             FROM tlumaczenie t
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
             WHERE DATE(t.data_nastepnej_powtorki) <= CURDATE()
-              AND t.id_jezyka = 1";
+              AND t.id_jezyka = 1
+            ORDER BY t.data_nastepnej_powtorki ASC";
 
                 var cmd = new MySqlCommand(query, connection);
 
@@ -195,17 +213,20 @@ namespace LearnLanguages.Services
                         int efOrdinal = reader.GetOrdinal("EasinessFactor");
                         int intervalOrdinal = reader.GetOrdinal("IntervalDays");
                         int repOrdinal = reader.GetOrdinal("Repetitions");
+                        int nextDateOrdinal = reader.GetOrdinal("NextReviewDate");
 
                         flashcards.Add(new FlashcardModel
                         {
                             TranslationId = reader.GetInt32("TranslationId"),
+                            TopicId = reader.GetInt32("TopicId"),
                             CategoryName = reader.GetString("CategoryName"),
                             TopicName = reader.GetString("TopicName"),
                             PolImageName = reader.GetString("PolImageName"),
                             EngImageName = reader.GetString("EngImageName"),
                             EasinessFactor = reader.IsDBNull(efOrdinal) ? 2.5 : reader.GetDouble(efOrdinal),
                             Interval = reader.IsDBNull(intervalOrdinal) ? 0 : reader.GetInt32(intervalOrdinal),
-                            Repetitions = reader.IsDBNull(repOrdinal) ? 0 : reader.GetInt32(repOrdinal)
+                            Repetitions = reader.IsDBNull(repOrdinal) ? 0 : reader.GetInt32(repOrdinal),
+                            NextReviewDate = reader.IsDBNull(nextDateOrdinal) ? DateTime.Today : reader.GetDateTime(nextDateOrdinal)
                         });
                     }
                 }
@@ -217,6 +238,10 @@ namespace LearnLanguages.Services
             int n = card.Repetitions;
             int interval = card.Interval;
             double ef = card.EasinessFactor;
+            DateTime today = DateTime.Today;
+
+            // Liczba dni spóźnienia (0, jeśli fiszka jest powtarzana w terminie)
+            int overdueDays = Math.Max(0, (today - card.NextReviewDate.Date).Days);
 
             if (isCorrect)
             {
@@ -228,11 +253,11 @@ namespace LearnLanguages.Services
                 }
                 else if (n == 2)
                 {
-                    interval = 6;
+                    interval = (int)Math.Round(6 + (overdueDays / 2.0), MidpointRounding.AwayFromZero);
                 }
                 else
                 {
-                    interval = (int)Math.Round(interval * ef, MidpointRounding.AwayFromZero);
+                    interval = (int)Math.Round((interval + (overdueDays / 2.0)) * ef, MidpointRounding.AwayFromZero);
                 }
 
                 ef = Math.Round(ef + 0.10, 2); // 3. Aktualizujemy EF dla q = 5 (+0.10)
@@ -245,7 +270,6 @@ namespace LearnLanguages.Services
                 ef = Math.Round(Math.Max(1.3, ef - 0.32), 2);
             }
 
-            DateTime today = DateTime.Today;
             DateTime nextReviewDate = today.AddDays(interval);
 
             using (var connection = GetConnection())
