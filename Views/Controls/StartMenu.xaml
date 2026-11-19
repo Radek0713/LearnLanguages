@@ -23,24 +23,11 @@
 
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Margin="0,0,0,22" HorizontalAlignment="Center">
-                    <Border Background="{StaticResource SoftBlueBackgroundBrush}"
-            BorderBrush="{StaticResource SoftBlueBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="10"
-            Padding="12,4"
-            HorizontalAlignment="Center"
-            Margin="0,0,0,14">
-                        <TextBlock x:Name="TxtProfileName"
-                   Text="👤 Profil"
-                   FontFamily="Segoe UI"
-                   FontSize="14"
-                   FontWeight="Bold"
-                   Foreground="{StaticResource PrimaryBluePressedBrush}"/>
-                    </Border>
-
-                    <TextBlock Text="Wybierz opcję" 
-               Style="{StaticResource PageTitleTextStyle}"
-               HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtProfileName" 
+                        Text="👤 Profil" 
+                        Style="{StaticResource PageTitleTextStyle}" 
+                        HorizontalAlignment="Center" 
+                        Margin="0,0,0,6"/>
                 </StackPanel>
 
                 <Button x:Name="btn_english" 
