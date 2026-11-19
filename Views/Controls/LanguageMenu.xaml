@@ -23,8 +23,14 @@
                 VerticalAlignment="Center">
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Margin="0,0,0,14" HorizontalAlignment="Center">
-                    <TextBlock Text="🌍 LearnLanguages" Style="{StaticResource PageTitleTextStyle}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                    <TextBlock Text="Wybierz sekcję, aby kontynuować naukę" Style="{StaticResource PageSubtitleTextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtProfileName" 
+               Text="👤 Profil" 
+               Style="{StaticResource PageTitleTextStyle}" 
+               HorizontalAlignment="Center" 
+               Margin="0,0,0,6"/>
+                    <TextBlock Text="Wybierz sekcję, aby kontynuować naukę" 
+               Style="{StaticResource PageSubtitleTextStyle}" 
+               HorizontalAlignment="Center"/>
                 </StackPanel>
 
                 <Button x:Name="btn_calendar" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_calendar_Click">

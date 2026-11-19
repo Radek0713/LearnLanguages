@@ -24,6 +24,56 @@ namespace LearnLanguages.Services
 
             return new MySqlConnection(connectionString);
         }
+        public static ProfileModel CurrentProfile { get; set; }
+
+        private static int CurrentProfileId =>
+            CurrentProfile?.Id ?? throw new InvalidOperationException("Nie wybrano profilu użytkownika.");
+
+        public static List<ProfileModel> GetProfiles()
+        {
+            var profiles = new List<ProfileModel>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("SELECT id, nazwa FROM profil ORDER BY id ASC", connection);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        profiles.Add(new ProfileModel
+                        {
+                            Id = reader.GetInt32("id"),
+                            Name = reader.GetString("nazwa")
+                        });
+                    }
+                }
+            }
+
+            return profiles;
+        }
+
+        public static void CreateProfile(string name)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("INSERT INTO profil (nazwa) VALUES (@name)", connection);
+                cmd.Parameters.AddWithValue("@name", name.Trim());
+                cmd.ExecuteNonQuery();
+            }
+        }
+        public static void DeleteProfile(int profileId)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("DELETE FROM profil WHERE id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", profileId);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
         // Pobiera wszystkie działy z bazy
         public static List<Department> GetDepartments()
@@ -63,16 +113,18 @@ namespace LearnLanguages.Services
                 tem.id AS Id,
                 tem.id_dzialu AS DepartmentId,
                 tem.nazwa AS Name,
-                tem.czy_wybrany AS IsSelected,
+                COALESCE(pt.czy_wybrany, 0) AS IsSelected,
                 COUNT(t.id) AS WordsCount
             FROM temat tem
+            LEFT JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = @profileId
             LEFT JOIN slowko s ON s.id_tematu = tem.id
             LEFT JOIN tlumaczenie t ON t.id_slowka = s.id AND t.id_jezyka = 1
             WHERE tem.id_dzialu = @departmentId
-            GROUP BY tem.id, tem.id_dzialu, tem.nazwa, tem.czy_wybrany
+            GROUP BY tem.id, tem.id_dzialu, tem.nazwa, pt.czy_wybrany
             ORDER BY tem.nazwa ASC";
 
                 var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 cmd.Parameters.AddWithValue("@departmentId", departmentId);
 
                 using (var reader = cmd.ExecuteReader())
@@ -101,19 +153,26 @@ namespace LearnLanguages.Services
             {
                 connection.Open();
 
-                var cmd1 = new MySqlCommand("UPDATE temat SET czy_wybrany = 1 WHERE id = @topicId", connection);
+                int profileId = CurrentProfileId;
+
+                var cmd1 = new MySqlCommand(@"
+            INSERT INTO profil_temat (id_profilu, id_tematu, czy_wybrany)
+            VALUES (@profileId, @topicId, 1)
+            ON DUPLICATE KEY UPDATE czy_wybrany = 1", connection);
+
+                cmd1.Parameters.AddWithValue("@profileId", profileId);
                 cmd1.Parameters.AddWithValue("@topicId", topicId);
                 cmd1.ExecuteNonQuery();
 
-                // B) Ustawienie jutrzejszej daty w tabeli tlumaczenie.
-                // Łączymy tabele tlumaczenie i slowko, aby zaktualizować tylko słówka z tego tematu (i tylko angielskie id=1).
                 var cmd2 = new MySqlCommand(@"
-            UPDATE tlumaczenie t 
-            JOIN slowko s ON t.id_slowka = s.id 
-            SET t.data_nastepnej_powtorki = @dzisiaj
+            INSERT IGNORE INTO profil_postep 
+                (id_profilu, id_tlumaczenia, wspolczynnik_latwosci, odstep_powtorek, liczba_poprawnych_powtorek, data_nastepnej_powtorki)
+            SELECT @profileId, t.id, 2.5, 0, 0, @dzisiaj
+            FROM tlumaczenie t
+            JOIN slowko s ON t.id_slowka = s.id
             WHERE s.id_tematu = @topicId AND t.id_jezyka = 1", connection);
 
-                // DateTime.Today ustawia czas na 00:00:00, AddDays(1) to jutro
+                cmd2.Parameters.AddWithValue("@profileId", profileId);
                 cmd2.Parameters.AddWithValue("@dzisiaj", DateTime.Today);
                 cmd2.Parameters.AddWithValue("@topicId", topicId);
                 cmd2.ExecuteNonQuery();
@@ -130,14 +189,17 @@ namespace LearnLanguages.Services
 
                 // Zliczamy słówka grupując je po dacie powtórki
                 var cmd = new MySqlCommand(@"
-            SELECT DATE(data_nastepnej_powtorki) as review_date, COUNT(*) as count 
-            FROM tlumaczenie 
-            WHERE YEAR(data_nastepnej_powtorki) = @year 
-              AND MONTH(data_nastepnej_powtorki) = @month
-              AND DATE(data_nastepnej_powtorki) >= CURDATE()
-              AND id_jezyka = 1
-            GROUP BY DATE(data_nastepnej_powtorki)", connection);
+            SELECT DATE(pp.data_nastepnej_powtorki) as review_date, COUNT(*) as count 
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            WHERE pp.id_profilu = @profileId
+              AND YEAR(pp.data_nastepnej_powtorki) = @year 
+              AND MONTH(pp.data_nastepnej_powtorki) = @month
+              AND DATE(pp.data_nastepnej_powtorki) >= CURDATE()
+              AND t.id_jezyka = 1
+            GROUP BY DATE(pp.data_nastepnej_powtorki)", connection);
 
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 cmd.Parameters.AddWithValue("@year", year);
                 cmd.Parameters.AddWithValue("@month", month);
 
@@ -167,10 +229,13 @@ namespace LearnLanguages.Services
 
                 var cmd = new MySqlCommand(@"
             SELECT COUNT(*) 
-            FROM tlumaczenie 
-            WHERE DATE(data_nastepnej_powtorki) < CURDATE() 
-              AND id_jezyka = 1", connection);
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            WHERE pp.id_profilu = @profileId
+              AND DATE(pp.data_nastepnej_powtorki) < CURDATE() 
+              AND t.id_jezyka = 1", connection);
 
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
@@ -180,15 +245,15 @@ namespace LearnLanguages.Services
             {
                 connection.Open();
 
-                // Funkcja CURDATE() w MySQL zwraca dzisiejszą datę.
-                // MOŻNA: Używamy <= aby złapać też zaległe powtórki z wczoraj czy przedwczoraj.
                 var cmd = new MySqlCommand(@"
             SELECT COUNT(*) 
-            FROM tlumaczenie 
-            WHERE DATE(data_nastepnej_powtorki) <= CURDATE() 
-              AND id_jezyka = 1", connection);
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            WHERE pp.id_profilu = @profileId
+                AND DATE(pp.data_nastepnej_powtorki) <= CURDATE() 
+                AND t.id_jezyka = 1", connection);
 
-                // ExecuteScalar zwraca pierwszy z brzegu wynik jako obiekt, więc bezpiecznie konwertujemy
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
@@ -205,18 +270,21 @@ namespace LearnLanguages.Services
                 tem.id AS TopicId,
                 tem.nazwa AS TopicName,
                 dz.nazwa AS CategoryName,
-                SUM(CASE WHEN DATE(t.data_nastepnej_powtorki) = CURDATE() THEN 1 ELSE 0 END) AS TodayCount,
-                SUM(CASE WHEN DATE(t.data_nastepnej_powtorki) < CURDATE() THEN 1 ELSE 0 END) AS OverdueCount
-            FROM tlumaczenie t
+                SUM(CASE WHEN DATE(pp.data_nastepnej_powtorki) = CURDATE() THEN 1 ELSE 0 END) AS TodayCount,
+                SUM(CASE WHEN DATE(pp.data_nastepnej_powtorki) < CURDATE() THEN 1 ELSE 0 END) AS OverdueCount
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
-            WHERE DATE(t.data_nastepnej_powtorki) <= CURDATE()
+            WHERE pp.id_profilu = @profileId
+              AND DATE(pp.data_nastepnej_powtorki) <= CURDATE()
               AND t.id_jezyka = 1
             GROUP BY tem.id, tem.nazwa, dz.nazwa
             ORDER BY OverdueCount DESC, dz.nazwa ASC, tem.nazwa ASC";
 
                 var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -245,8 +313,8 @@ namespace LearnLanguages.Services
                 connection.Open();
 
                 string dateCondition = onlyOverdue
-            ? "DATE(t.data_nastepnej_powtorki) < CURDATE()"
-            : "DATE(t.data_nastepnej_powtorki) <= CURDATE()";
+                    ? "DATE(pp.data_nastepnej_powtorki) < CURDATE()"
+                    : "DATE(pp.data_nastepnej_powtorki) <= CURDATE()";
 
                 string topicCondition = topicId.HasValue
                     ? "AND tem.id = @topicId"
@@ -260,20 +328,23 @@ namespace LearnLanguages.Services
                 tem.nazwa AS TopicName,
                 s.grafika AS PolImageName,
                 t.grafika AS EngImageName,
-                t.wspolczynnik_latwosci AS EasinessFactor,
-                t.odstep_powtorek AS IntervalDays,
-                t.liczba_poprawnych_powtorek AS Repetitions,
-                t.data_nastepnej_powtorki AS NextReviewDate
-            FROM tlumaczenie t
+                pp.wspolczynnik_latwosci AS EasinessFactor,
+                pp.odstep_powtorek AS IntervalDays,
+                pp.liczba_poprawnych_powtorek AS Repetitions,
+                pp.data_nastepnej_powtorki AS NextReviewDate
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
-            WHERE {dateCondition}
+            WHERE pp.id_profilu = @profileId
+              AND {dateCondition}
               AND t.id_jezyka = 1
               {topicCondition}
-            ORDER BY t.data_nastepnej_powtorki ASC";
+            ORDER BY pp.data_nastepnej_powtorki ASC";
 
                 var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 if (topicId.HasValue)
                 {
                     cmd.Parameters.AddWithValue("@topicId", topicId.Value);
@@ -350,21 +421,21 @@ namespace LearnLanguages.Services
                 connection.Open();
 
                 string query = @"
-            UPDATE tlumaczenie 
+            UPDATE profil_postep 
             SET 
-                data_ostatniej_powtorki = @lastReview,
                 data_nastepnej_powtorki = @nextReview,
                 wspolczynnik_latwosci = @ef,
                 odstep_powtorek = @interval,
                 liczba_poprawnych_powtorek = @repetitions
-            WHERE id = @id";
+            WHERE id_profilu = @profileId 
+                AND id_tlumaczenia = @id";
 
                 var cmd = new MySqlCommand(query, connection);
-                cmd.Parameters.AddWithValue("@lastReview", today);
                 cmd.Parameters.AddWithValue("@nextReview", nextReviewDate);
                 cmd.Parameters.AddWithValue("@ef", ef);
                 cmd.Parameters.AddWithValue("@interval", interval);
                 cmd.Parameters.AddWithValue("@repetitions", n);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 cmd.Parameters.AddWithValue("@id", card.TranslationId);
 
                 cmd.ExecuteNonQuery();
@@ -424,12 +495,15 @@ namespace LearnLanguages.Services
                 tem.id AS TopicId,
                 dz.nazwa AS CategoryName,
                 tem.nazwa AS TopicName
-            FROM temat tem
+            FROM profil_temat pt
+            JOIN temat tem ON pt.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
-            WHERE tem.czy_wybrany = 1
+            WHERE pt.id_profilu = @profileId 
+                AND pt.czy_wybrany = 1
             ORDER BY dz.nazwa ASC, tem.nazwa ASC";
 
                 var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
 
                 using (var reader = cmd.ExecuteReader())
                 {

@@ -20,7 +20,7 @@ namespace LearnLanguages.Views
         public MainWindow()
         {
             InitializeComponent();
-            MainContentArea.Content = new Controls.StartMenu();
+            MainContentArea.Content = new Controls.Profiles();
 
             // Testujemy połączenie z bazą przy starcie
             TestDatabaseConnection();

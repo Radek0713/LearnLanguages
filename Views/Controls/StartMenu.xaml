@@ -22,10 +22,26 @@
                 HorizontalAlignment="Stretch">
 
             <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Wybierz język do nauki" 
-                           Style="{StaticResource PageTitleTextStyle}"
-                           HorizontalAlignment="Center" 
-                           Margin="0,0,0,30"/>
+                <StackPanel Margin="0,0,0,22" HorizontalAlignment="Center">
+                    <Border Background="{StaticResource SoftBlueBackgroundBrush}"
+            BorderBrush="{StaticResource SoftBlueBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="12,4"
+            HorizontalAlignment="Center"
+            Margin="0,0,0,14">
+                        <TextBlock x:Name="TxtProfileName"
+                   Text="👤 Profil"
+                   FontFamily="Segoe UI"
+                   FontSize="14"
+                   FontWeight="Bold"
+                   Foreground="{StaticResource PrimaryBluePressedBrush}"/>
+                    </Border>
+
+                    <TextBlock Text="Wybierz opcję" 
+               Style="{StaticResource PageTitleTextStyle}"
+               HorizontalAlignment="Center"/>
+                </StackPanel>
 
                 <Button x:Name="btn_english" 
                         Style="{StaticResource PrimaryButtonStyle}" 
@@ -33,8 +49,25 @@
                         FontSize="16"
                         Click="Btn_english_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="Angielski" VerticalAlignment="Center"/>
+                        <TextBlock Text="Ucz się angielskiego" VerticalAlignment="Center"/>
                     </StackPanel>
+                </Button>
+                <Button x:Name="btn_change_profile"
+                        Content="Zmień profil"
+                        Style="{StaticResource BackButtonStyle}"
+                        Height="48"
+                        FontSize="15"
+                        Margin="0,34,0,0"
+                        Click="Btn_change_profile_Click">
+                </Button>
+                <Button x:Name="btn_delete_profile"
+                        Content="Usuń profil"
+                        Style="{StaticResource BaseModernButtonStyle}"
+                        Background="IndianRed"
+                        Height="48"
+                        FontSize="15"
+                        Margin="0,12,0,0"
+                        Click="Btn_delete_profile_Click">
                 </Button>
             </StackPanel>
         </Border>

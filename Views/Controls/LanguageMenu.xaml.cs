@@ -25,6 +25,11 @@ namespace LearnLanguages.Views.Controls
         public LanguageMenu()
         {
             InitializeComponent();
+
+            if (DatabaseService.CurrentProfile != null)
+            {
+                TxtProfileName.Text = $"👤 {DatabaseService.CurrentProfile.Name}";
+            }
         }
 
         private void btn_calendar_Click(object sender, RoutedEventArgs e)
