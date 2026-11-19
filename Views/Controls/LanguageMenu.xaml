@@ -55,7 +55,7 @@
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_back" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="52" FontSize="15" Margin="0,16,0,0" Click="btn_back_Click"/>
+                <Button x:Name="btn_back" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="52" FontSize="15" Margin="0,10,0,0" Click="btn_back_Click"/>
             </StackPanel>
         </Border>
     </Grid>
