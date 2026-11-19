@@ -137,8 +137,8 @@ namespace LearnLanguages.Views.Controls
         private async System.Threading.Tasks.Task LoadMoreTasksAsync()
         {
             txt_loading.Visibility = Visibility.Visible;
-            btn_next.Visibility = Visibility.Collapsed; // Ukrywamy przycisk następnego zadania na czas ładowania
-            txt_feedback.Text = ""; // Czyszczenie wyjaśnienia z poprzedniego zadania
+            btn_next.Visibility = Visibility.Collapsed;
+            txt_feedback.Text = "";
             HideQuizContent(true);
 
             try
@@ -147,12 +147,10 @@ namespace LearnLanguages.Views.Controls
 
                 if (!isGrammarMode)
                 {
-                    // Pobieramy paczkę 5 zadań ze słówek
                     resultList = await GroqService.GenerateBatchTasksForWordsAsync(topicWords, 5);
                 }
                 else
                 {
-                    // Pobieramy paczkę 5 zadań z gramatyki (zamiast 1)
                     resultList = await GroqService.GenerateGrammarTasksAsync(selectedGrammarTopic.Id, count: 5);
                 }
 
@@ -169,22 +167,44 @@ namespace LearnLanguages.Views.Controls
                 }
                 else
                 {
-                    txt_question.Text = "Nie udało się wygenerować zadań. Spróbuj ponownie.";
-                    HideQuizContent(false);
+                    ShowApiErrorState("Nie udało się wygenerować zadań. Serwer zwrócił pustą odpowiedź.");
                 }
             }
             catch (Exception ex)
             {
                 txt_loading.Visibility = Visibility.Collapsed;
-                MessageBox.Show($"Błąd podczas generowania zadania przez Groq:\n{ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
-                pnl_quiz.Visibility = Visibility.Collapsed;
-                if (isGrammarMode) pnl_grammar_selection.Visibility = Visibility.Visible;
-                else pnl_vocabulary_selection.Visibility = Visibility.Visible;
+
+                // Sprawdzamy czy to błąd związany z limitem (np. 429 Too Many Requests) lub ogólny błąd sieciowy/serwera
+                string errorMessage = "Chwilowo serwer AI jest mocno obciążony lub wystąpił problem z połączeniem.";
+                if (ex.Message.Contains("429") || ex.Message.Contains("Too Many Requests"))
+                {
+                    errorMessage = "Chwilowo AI jest przeciążone (przekroczono limit zapytań w darmowej wersji Groq).";
+                }
+
+                ShowApiErrorState(errorMessage);
             }
+        }
+
+        // Pomocnicza metoda wyświetlająca stan błędu w panelu quizu zamiast wyskakującego okienka
+        private void ShowApiErrorState(string message)
+        {
+            HideQuizContent(true);
+            txt_question.Visibility = Visibility.Visible;
+            txt_question.Text = $"⚠️ {message}\n\nCo chcesz zrobić?";
+
+            // Przekształcamy przycisk 'btn_next' lub obsługujemy go w interfejsie jako "Generuj ponownie"
+            btn_next.Content = "🔄 Generuj ponownie";
+            btn_next.Visibility = Visibility.Visible;
+
+            // Opcjonalnie: jeśli chcesz umożliwić powrót do wyboru kategorii bezpośrednio z widoku błędu,
+            // możesz sterować widocznością dodatkowego przycisku cofnięcia.
         }
 
         private void ShowNextTaskFromQueue()
         {
+            // Przywracamy standardową nazwę przycisku następnego zadania (na wypadek, gdyby był wcześniej zmieniony na "Generuj ponownie")
+            btn_next.Content = "Następne zadanie";
+
             if (taskQueue.Count > 0)
             {
                 currentTask = taskQueue.Dequeue();
@@ -238,6 +258,13 @@ namespace LearnLanguages.Views.Controls
 
         private async void btn_next_Click(object sender, RoutedEventArgs e)
         {
+            // Jeśli przycisk pełni rolę ponownego generowania po błędzie:
+            if (btn_next.Content.ToString().Contains("Generuj ponownie"))
+            {
+                await LoadMoreTasksAsync();
+                return;
+            }
+
             if (taskQueue.Count > 0)
             {
                 ShowNextTaskFromQueue();
