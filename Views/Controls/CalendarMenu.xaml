@@ -11,6 +11,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -32,8 +33,49 @@
                 <Button Grid.Column="2" Content="Następny &gt;" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Click="Btn_NextMonth_Click" HorizontalAlignment="Right"/>
             </Grid>
 
+            <!-- Pomarańczowy baner sugestii nowych zestawów (widoczny przy < 10 fiszkach na najbliższe 3 dni) -->
+            <Border x:Name="LowReviewsBanner"
+                    Grid.Row="1"
+                    Background="{StaticResource SoftOrangeBackgroundBrush}"
+                    BorderBrush="{StaticResource SoftOrangeBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="TxtLowReviewsMessage"
+                                   Text="Masz tylko 0 fiszek zaplanowanych na najbliższe 3 dni. Dodaj nowy zestaw, aby utrzymać tempo nauki."
+                                   FontFamily="Segoe UI"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource DarkOrangeTextBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button x:Name="BtnGoToTopics"
+                            Grid.Column="1"
+                            Content="Dodaj zestaw"
+                            Style="{StaticResource WarningButtonStyle}"
+                            Height="34"
+                            FontSize="12.5"
+                            Padding="14,0"
+                            Margin="14,0,0,0"
+                            VerticalAlignment="Center"
+                            Click="BtnGoToTopics_Click"/>
+                </Grid>
+            </Border>
+
             <!-- Nagłówki dni tygodnia -->
-            <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
+            <UniformGrid Grid.Row="2" Columns="7" Margin="0,0,0,8">
                 <TextBlock Text="Pon" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
                 <TextBlock Text="Wto" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
                 <TextBlock Text="Śro" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" FontFamily="Segoe UI" FontSize="13" HorizontalAlignment="Center"/>
@@ -44,7 +86,7 @@
             </UniformGrid>
 
             <!-- Siatka dni kalendarza -->
-            <ItemsControl x:Name="CalendarItemsControl" Grid.Row="2">
+            <ItemsControl x:Name="CalendarItemsControl" Grid.Row="3">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="7" Rows="6"/>
@@ -128,7 +170,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" Width="101" HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click"/>
+            <Button Grid.Row="4" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" Width="101" HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click"/>
         </Grid>
     </Border>
 </UserControl>

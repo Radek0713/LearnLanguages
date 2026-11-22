@@ -330,6 +330,47 @@ namespace LearnLanguages.Services
 
             return summaries;
         }
+        public static int GetUpcomingReviewsCount(int days = 3)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*) 
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
+            WHERE pp.id_profilu = @profileId
+              AND pt.czy_wybrany = 1
+              AND DATE(pp.data_nastepnej_powtorki) <= DATE_ADD(CURDATE(), INTERVAL @daysOffset DAY)
+              AND t.id_jezyka = 1", connection);
+
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+                cmd.Parameters.AddWithValue("@daysOffset", days - 1);
+
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
+
+        public static bool HasUnselectedTopics()
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*)
+            FROM temat tem
+            LEFT JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = @profileId
+            WHERE COALESCE(pt.czy_wybrany, 0) = 0", connection);
+
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+            }
+        }
         public static List<FlashcardModel> GetFlashcardsForToday(int? topicId = null, bool onlyOverdue = false)
         {
             var flashcards = new List<FlashcardModel>();

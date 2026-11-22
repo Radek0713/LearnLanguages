@@ -38,6 +38,10 @@
     <SolidColorBrush x:Key="SoftBlueBackgroundBrush" Color="#EFF6FF"/>
     <SolidColorBrush x:Key="SoftBlueBorderBrush" Color="#BFDBFE"/>
     <SolidColorBrush x:Key="SoftBlueHoverBorderBrush" Color="#93C5FD"/>
+    
+    <SolidColorBrush x:Key="SoftOrangeBackgroundBrush" Color="#FFF7ED"/>
+    <SolidColorBrush x:Key="SoftOrangeBorderBrush" Color="#FED7AA"/>
+    <SolidColorBrush x:Key="DarkOrangeTextBrush" Color="#9A3412"/>
 
     <!-- Kolory tekstów -->
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0F172A"/>

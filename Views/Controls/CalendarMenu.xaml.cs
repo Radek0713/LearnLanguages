@@ -28,6 +28,7 @@ namespace LearnLanguages.Views.Controls
             InitializeComponent();
             _currentDate = DateTime.Today; // Zaczynamy od obecnego miesiąca
             LoadCalendar();
+            UpdateLowReviewsBanner();
         }
 
         private void LoadCalendar()
@@ -107,6 +108,29 @@ namespace LearnLanguages.Views.Controls
             if (mainWindow != null)
             {
                 mainWindow.MainContentArea.Content = new LanguageMenu();
+            }
+        }
+        private void UpdateLowReviewsBanner()
+        {
+            int upcomingCount = DatabaseService.GetUpcomingReviewsCount(3);
+            bool hasUnselectedTopics = DatabaseService.HasUnselectedTopics();
+
+            if (upcomingCount < 10 && hasUnselectedTopics)
+            {
+                TxtLowReviewsMessage.Text = $"Masz {upcomingCount} fiszek do powtórki w najbliższych 3 dniach. Dodaj nowy zestaw.";
+                LowReviewsBanner.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                LowReviewsBanner.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void BtnGoToTopics_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = (Window.GetWindow(this) ?? Application.Current.MainWindow) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.MainContentArea.Content = new TopicsMenu();
             }
         }
     }
