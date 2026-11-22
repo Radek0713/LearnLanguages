@@ -49,13 +49,32 @@ namespace LearnLanguages.Views.Controls
         }
         private void AddTopic_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button clickedButton && clickedButton.Tag is Topic selectedTopic)
+            if (sender is Button btn && btn.Tag is Topic topic)
             {
-                DatabaseService.MarkTopicAsSelected(selectedTopic.Id);
+                if (!topic.IsSelected)
+                {
+                    DatabaseService.MarkTopicAsSelected(topic.Id);
+                }
+                else
+                {
+                    MessageBoxResult result = MessageBox.Show(
+                        $"Czy na pewno chcesz usunąć temat „{topic.Name}” z aktywnej nauki?\nDotychczasowe postępy powtórek zostaną zachowane na wypadek powrotu.",
+                        "Potwierdzenie usunięcia",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
 
-                // Odświeżamy zarówno górny spis wybranych tematów, jak i listę po prawej
+                    if (result != MessageBoxResult.Yes)
+                        return;
+
+                    DatabaseService.UnmarkTopicAsSelected(topic.Id);
+                }
+
+                // Odświeżenie górnego paska wybranych tematów oraz listy tematów w dziale
                 LoadSelectedTopics();
-                TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedTopic.DepartmentId);
+                if (DepartmentsListBox.SelectedItem is Department selectedDept)
+                {
+                    TopicsItemsControl.ItemsSource = DatabaseService.GetTopicsByDepartment(selectedDept.Id);
+                }
             }
         }
         private void Btn_Back_Click(object sender, RoutedEventArgs e)

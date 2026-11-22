@@ -178,6 +178,21 @@ namespace LearnLanguages.Services
                 cmd2.ExecuteNonQuery();
             }
         }
+        public static void UnmarkTopicAsSelected(int topicId)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var cmd = new MySqlCommand(@"
+            UPDATE profil_temat 
+            SET czy_wybrany = 0 
+            WHERE id_profilu = @profileId AND id_tematu = @topicId", connection);
+
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+                cmd.Parameters.AddWithValue("@topicId", topicId);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
         // Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
         public static Dictionary<DateTime, int> GetReviewCountsForMonth(int year, int month)
@@ -192,7 +207,10 @@ namespace LearnLanguages.Services
             SELECT DATE(pp.data_nastepnej_powtorki) as review_date, COUNT(*) as count 
             FROM profil_postep pp
             JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
             WHERE pp.id_profilu = @profileId
+              AND pt.czy_wybrany = 1
               AND YEAR(pp.data_nastepnej_powtorki) = @year 
               AND MONTH(pp.data_nastepnej_powtorki) = @month
               AND DATE(pp.data_nastepnej_powtorki) >= CURDATE()
@@ -231,7 +249,10 @@ namespace LearnLanguages.Services
             SELECT COUNT(*) 
             FROM profil_postep pp
             JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
             WHERE pp.id_profilu = @profileId
+              AND pt.czy_wybrany = 1
               AND DATE(pp.data_nastepnej_powtorki) < CURDATE() 
               AND t.id_jezyka = 1", connection);
 
@@ -249,9 +270,12 @@ namespace LearnLanguages.Services
             SELECT COUNT(*) 
             FROM profil_postep pp
             JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
             WHERE pp.id_profilu = @profileId
-                AND DATE(pp.data_nastepnej_powtorki) <= CURDATE() 
-                AND t.id_jezyka = 1", connection);
+              AND pt.czy_wybrany = 1
+              AND DATE(pp.data_nastepnej_powtorki) <= CURDATE() 
+              AND t.id_jezyka = 1", connection);
 
                 cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
                 return Convert.ToInt32(cmd.ExecuteScalar());
@@ -277,9 +301,11 @@ namespace LearnLanguages.Services
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
+            JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = pp.id_profilu
             WHERE pp.id_profilu = @profileId
-              AND DATE(pp.data_nastepnej_powtorki) <= CURDATE()
-              AND t.id_jezyka = 1
+                AND pt.czy_wybrany = 1
+                AND DATE(pp.data_nastepnej_powtorki) <= CURDATE()
+                AND t.id_jezyka = 1
             GROUP BY tem.id, tem.nazwa, dz.nazwa
             ORDER BY OverdueCount DESC, dz.nazwa ASC, tem.nazwa ASC";
 
@@ -337,7 +363,9 @@ namespace LearnLanguages.Services
             JOIN slowko s ON t.id_slowka = s.id
             JOIN temat tem ON s.id_tematu = tem.id
             JOIN dzial dz ON tem.id_dzialu = dz.id
+            JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = pp.id_profilu
             WHERE pp.id_profilu = @profileId
+              AND pt.czy_wybrany = 1
               AND {dateCondition}
               AND t.id_jezyka = 1
               {topicCondition}

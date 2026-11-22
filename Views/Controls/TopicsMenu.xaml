@@ -107,10 +107,9 @@
                                                                 <Setter Property="Background" Value="{StaticResource SuccessGreenHoverBrush}"/>
                                                             </Trigger>
                                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="Content" Value="✓ W nauce"/>
-                                                                <Setter Property="IsEnabled" Value="False"/>
-                                                                <Setter Property="Background" Value="{StaticResource CardBorderBrush}"/>
-                                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                                                <Setter Property="Content" Value="Usuń z nauki"/>
+                                                                <Setter Property="Background" Value="IndianRed"/>
+                                                                <Setter Property="Foreground" Value="White"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
