@@ -1,7 +1,9 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,151 +16,426 @@ namespace LearnLanguages.Services
     {
         private static readonly HttpClient httpClient;
 
+        private const string Model = "openai/gpt-oss-20b";
+
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         static GroqService()
         {
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            };
-
-            httpClient = new HttpClient(handler)
+            // Domyślna walidacja certyfikatów SSL.
+            // Nie wyłączamy zabezpieczeń HTTPS.
+            httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://api.groq.com/"),
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(60)
             };
         }
 
-        public static async Task<List<ExerciseTaskModel>> GenerateBatchTasksForWordsAsync(List<string> words, int count = 5)
+        public static async Task<List<ExerciseTaskModel>>
+            GenerateBatchTasksForWordsAsync(
+                List<string> words,
+                int count = 5)
         {
+            if (words == null || words.Count == 0)
+                return new List<ExerciseTaskModel>();
+
+            if (count <= 0)
+                throw new ArgumentException(
+                    "Liczba zadań musi być większa od zera.");
+
             var random = new Random();
-            var selectedWords = words.OrderBy(x => random.Next()).Take(count).ToList();
+
+            var selectedWords = words
+                .Where(w => !string.IsNullOrWhiteSpace(w))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(_ => random.Next())
+                .Take(count)
+                .ToList();
+
+            if (selectedWords.Count == 0)
+                return new List<ExerciseTaskModel>();
+
             string wordsJoined = string.Join(", ", selectedWords);
 
             string prompt = $@"
-Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {selectedWords.Count} zadań testowych typu 'wypełnij lukę' (fill in the blank) w formacie JSON dla następujących angielskich słówek: [{wordsJoined}].
-Zasady:
-1. Zdanie ('TrescZdania') musi być w całości w języku angielskim z luką oznaczoną jako '_____'.
-2. Wszystkie opcje w tablicy 'Opcje' (4 stringi: A, B, C, D) muszą być w języku angielskim. Jedna opcja to poszukiwane słowo, pozostałe 3 to sensowne dystraktory.
-3. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. jeśli poprawna opcja to 'read', wpisz 'read', a NIE literę 'A' ani 'Opcja A').
-4. 'Wyjasnienie' ma być krótkie i w języku polskim.
+Jesteś profesjonalnym nauczycielem języka angielskiego.
 
-Zwróć obiekt JSON posiadający pole 'tasks' będące tablicą zawierającą dokładnie {selectedWords.Count} obiektów posiadających pola: 'TrescZdania', 'Opcje', 'PoprawnaOdpowiedz', 'Wyjasnienie'.
-Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez żadnych znaczników markdown typu ```json).";
+Przygotuj dokładnie {selectedWords.Count} zadań testowych typu fill in the blank.
 
-            return await CallGroqApiAsync(prompt);
+Słówka:
+{wordsJoined}
+
+ZASADY:
+
+1. TrescZdania musi być w całości po angielsku.
+2. Luka musi być oznaczona jako _____.
+3. Opcje muszą zawierać dokładnie 4 różne odpowiedzi w języku angielskim.
+4. Dokładnie jedna odpowiedź musi być poprawna.
+5. PoprawnaOdpowiedz musi zawierać dokładny tekst poprawnej opcji z tablicy Opcje.
+6. Wyjasnienie musi być krótkie i napisane po polsku.
+7. Każde zadanie musi dotyczyć jednego ze wskazanych słówek.
+8. Nie powtarzaj zdań ani odpowiedzi.
+9. Dystraktory muszą być sensowne i gramatycznie możliwe, ale nie mogą być poprawne w danym kontekście.
+
+Zwróć obiekt zawierający pole tasks z dokładnie {selectedWords.Count} zadaniami.";
+
+            return await CallGroqApiAsync(
+                prompt, selectedWords.Count);
         }
 
-        public static async Task<List<ExerciseTaskModel>> GenerateGrammarTasksAsync(int grammarId, int count = 5)
+        public static async Task<List<ExerciseTaskModel>>
+            GenerateGrammarTasksAsync(
+                int grammarId,
+                int count = 5)
         {
-            string grammarTopic = DatabaseService.GetGrammarTopicName(grammarId);
-            if (string.IsNullOrEmpty(grammarTopic)) return new List<ExerciseTaskModel>();
+            if (count <= 0)
+                throw new ArgumentException(
+                    "Liczba zadań musi być większa od zera.");
+
+            string grammarTopic =
+                DatabaseService.GetGrammarTopicName(grammarId);
+
+            if (string.IsNullOrWhiteSpace(grammarTopic))
+                return new List<ExerciseTaskModel>();
 
             string prompt = $@"
-Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {count} różnorodnych zadań testowych typu 'wypełnij lukę' (fill in the blank) z gramatyki w formacie JSON.
-Zagadnienie gramatyczne to: '{grammarTopic}'.
+Jesteś profesjonalnym nauczycielem języka angielskiego.
 
-Kluczowe zasady dotyczące konstrukcji zdań i odpowiedzi:
-1. Zdania ('TrescZdania') muszą zawierać lukę '_____' w miejscu, które wymaga użycia **pełnej formy czasownika w danym czasie**, co oznacza, że luka **musi wymagać wpisania zarówno operatora/posiłkowego (np. have, had, will, did, do, are), jak i czasownika właściwego** (np. 'had finished', 'have been waiting', 'will go', 'did not see', 'is playing'), a nie tylko pojedynczego słowa.
-2. W nawiasie obok luki możesz podać bezokolicznik czasownika w celach pomocniczych, np. 'By the time we arrived, he _____ (finish) his work.' lub konstruować zdania tak, aby kontekst jednoznacznie wskazywał formę.
-3. Wszystkie opcje w tablicy 'Opcje' (4 stringi: A, B, C, D) muszą być w języku angielskim i mogą składać się z dwóch lub więcej słów (np. 'had finished', 'has finished', 'finished', 'was finishing'). Dokładnie jeden jest poprawny, a pozostałe to typowe dystraktory gramatyczne (błędy w operatorze lub formie).
-4. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. 'had finished').
-5. 'Wyjasnienie' ma być w języku polskim i tłumaczyć, dlaczego użyto takiej formy gramatycznej (w tym operatora i czasownika).
+Przygotuj dokładnie {count} różnorodnych zadań testowych
+typu fill in the blank.
 
-Zwróć obiekt JSON z polem 'tasks' zawierającym tablicę z dokładnie {count} obiektami posiadającymi pola: 'TrescZdania', 'Opcje', 'PoprawnaOdpowiedz', 'Wyjasnienie'.
-Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez znaczników markdown).";
+ZAGADNIENIE GRAMATYCZNE:
+{grammarTopic}
 
-            return await CallGroqApiAsync(prompt);
+ZASADY:
+
+1. Zdania muszą być napisane po angielsku.
+2. Luka musi być oznaczona jako _____.
+3. Luka musi wymagać użycia pełnej formy gramatycznej,
+   a nie tylko pojedynczego słowa.
+4. Możesz podać bezokolicznik czasownika w nawiasie.
+5. Opcje muszą zawierać dokładnie 4 różne odpowiedzi.
+6. Opcje muszą być w języku angielskim.
+7. Dokładnie jedna odpowiedź musi być poprawna.
+8. PoprawnaOdpowiedz musi zawierać dokładny tekst
+   poprawnej opcji z tablicy Opcje.
+9. Wyjasnienie musi być napisane po polsku
+   i wyjaśniać zastosowaną konstrukcję gramatyczną.
+10. Dystraktory powinny przedstawiać typowe błędy gramatyczne.
+11. Nie powtarzaj zdań ani pytań.
+
+Zwróć dokładnie {count} różnych zadań.";
+
+            return await CallGroqApiAsync(prompt, count);
         }
 
-        private static async Task<List<ExerciseTaskModel>> CallGroqApiAsync(string prompt)
+        private static async Task<List<ExerciseTaskModel>>
+            CallGroqApiAsync(string prompt, int expectedCount)
         {
             Env.Load();
-            string apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY")?.Trim().Trim('"', '\'');
 
-            if (string.IsNullOrEmpty(apiKey))
+            string apiKey = Environment
+                .GetEnvironmentVariable("GROQ_API_KEY")
+                ?.Trim()
+                .Trim('"', '\'');
+
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new Exception("Brak klucza GROQ_API_KEY w pliku .env lub zmienna nie jest widoczna!");
+                throw new Exception(
+                    "Brak klucza GROQ_API_KEY w pliku .env.");
             }
 
-            string endpoint = "openai/v1/chat/completions";
+            // Ścisły schemat odpowiedzi JSON.
+            var responseSchema = new
+            {
+                type = "object",
+
+                properties = new
+                {
+                    tasks = new
+                    {
+                        type = "array",
+
+                        items = new
+                        {
+                            type = "object",
+
+                            properties = new
+                            {
+                                TrescZdania = new
+                                {
+                                    type = "string"
+                                },
+
+                                Opcje = new
+                                {
+                                    type = "array",
+                                    items = new
+                                    {
+                                        type = "string"
+                                    }
+                                },
+
+                                PoprawnaOdpowiedz = new
+                                {
+                                    type = "string"
+                                },
+
+                                Wyjasnienie = new
+                                {
+                                    type = "string"
+                                }
+                            },
+
+                            required = new[]
+                            {
+                                "TrescZdania",
+                                "Opcje",
+                                "PoprawnaOdpowiedz",
+                                "Wyjasnienie"
+                            },
+
+                            additionalProperties = false
+                        }
+                    }
+                },
+
+                required = new[]
+                {
+                    "tasks"
+                },
+
+                additionalProperties = false
+            };
 
             var requestBody = new
             {
-                model = "openai/gpt-oss-20b",
+                model = Model,
+
                 messages = new[]
                 {
+                    new
+                    {
+                        role = "system",
+                        content =
+                            "Jesteś profesjonalnym nauczycielem języka " +
+                            "angielskiego. Generujesz wysokiej jakości " +
+                            "zadania edukacyjne. Zawsze zwracasz dane " +
+                            "zgodne z wymaganym schematem."
+                    },
+
                     new
                     {
                         role = "user",
                         content = prompt
                     }
                 },
-                temperature = 0.7,
-                response_format = new { type = "json_object" }
+
+                temperature = 0.3,
+
+                max_completion_tokens = 4096,
+
+                reasoning_effort = "low",
+
+                reasoning_format = "hidden",
+
+                response_format = new
+                {
+                    type = "json_schema",
+
+                    json_schema = new
+                    {
+                        name = "english_exercises",
+
+                        strict = true,
+
+                        schema = responseSchema
+                    }
+                }
             };
 
-            string jsonPayload = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            string jsonPayload =
+                JsonSerializer.Serialize(requestBody);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-            {
-                Content = content
-            };
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "openai/v1/chat/completions");
 
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", apiKey);
 
-            var response = await httpClient.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
+            request.Content = new StringContent(
+                jsonPayload,
+                Encoding.UTF8,
+                "application/json");
+
+            using var response =
+                await httpClient.SendAsync(request);
+
+            string responseString =
+                await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Groq API odpowiedziało błędem ({response.StatusCode}): {responseString}");
+                throw new Exception(
+                    $"Groq API ERROR: {(int)response.StatusCode} " +
+                    $"{response.StatusCode}\n" +
+                    $"Odpowiedź serwera: {responseString}");
             }
-
-            using var doc = JsonDocument.Parse(responseString);
-            var root = doc.RootElement;
-            string rawText = root.GetProperty("choices")[0]
-                                 .GetProperty("message")
-                                 .GetProperty("content")
-                                 .GetString();
-
-            rawText = rawText.Trim();
-            if (rawText.StartsWith("```json")) rawText = rawText.Substring(7);
-            else if (rawText.StartsWith("```")) rawText = rawText.Substring(3);
-
-            if (rawText.EndsWith("```"))
-            {
-                rawText = rawText.Substring(0, rawText.Length - 3).Trim();
-            }
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             try
             {
-                using var jsonDoc = JsonDocument.Parse(rawText);
-                var rootElement = jsonDoc.RootElement;
+                using var document =
+                    JsonDocument.Parse(responseString);
 
-                if (rootElement.ValueKind == JsonValueKind.Object && rootElement.TryGetProperty("tasks", out var tasksElement))
+                var root = document.RootElement;
+
+                if (!root.TryGetProperty("choices", out var choices) ||
+                    choices.GetArrayLength() == 0)
                 {
-                    string tasksJson = tasksElement.GetRawText();
-                    return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(tasksJson, options) ?? new List<ExerciseTaskModel>();
+                    throw new Exception(
+                        "Groq nie zwrócił żadnej odpowiedzi.");
                 }
-                else if (rootElement.ValueKind == JsonValueKind.Object)
+
+                var message = choices[0]
+                    .GetProperty("message");
+
+                if (message.TryGetProperty("refusal", out var refusal))
                 {
-                    var singleItem = JsonSerializer.Deserialize<ExerciseTaskModel>(rawText, options);
-                    return singleItem != null ? new List<ExerciseTaskModel> { singleItem } : new List<ExerciseTaskModel>();
+                    throw new Exception(
+                        $"Model odmówił wygenerowania zadań: " +
+                        refusal.GetString());
                 }
-                else if (rootElement.ValueKind == JsonValueKind.Array)
+
+                if (!message.TryGetProperty("content", out var contentElement) ||
+                    contentElement.ValueKind != JsonValueKind.String)
                 {
-                    return JsonSerializer.Deserialize<List<ExerciseTaskModel>>(rawText, options) ?? new List<ExerciseTaskModel>();
+                    throw new Exception(
+                        "Model nie zwrócił treści JSON.");
                 }
+
+                string rawText = contentElement.GetString();
+
+                if (string.IsNullOrWhiteSpace(rawText))
+                    throw new Exception("Odpowiedź modelu jest pusta.");
+
+                using var jsonDocument =
+                    JsonDocument.Parse(rawText);
+
+                var jsonRoot = jsonDocument.RootElement;
+
+                if (!jsonRoot.TryGetProperty(
+                    "tasks", out var tasksElement) ||
+                    tasksElement.ValueKind != JsonValueKind.Array)
+                {
+                    throw new Exception(
+                        "Brak poprawnej tablicy tasks.");
+                }
+
+                if (tasksElement.GetArrayLength() != expectedCount)
+                {
+                    throw new Exception(
+                        $"Nieprawidłowa liczba zadań. " +
+                        $"Oczekiwano: {expectedCount}, " +
+                        $"otrzymano: {tasksElement.GetArrayLength()}.");
+                }
+
+                // Dodatkowa kontrola danych przed deserializacją.
+                foreach (var task in tasksElement.EnumerateArray())
+                {
+                    string[] requiredFields =
+                    {
+                        "TrescZdania",
+                        "Opcje",
+                        "PoprawnaOdpowiedz",
+                        "Wyjasnienie"
+                    };
+
+                    foreach (string field in requiredFields)
+                    {
+                        if (!task.TryGetProperty(field, out var value) ||
+                            value.ValueKind != JsonValueKind.String &&
+                            value.ValueKind != JsonValueKind.Array)
+                        {
+                            throw new Exception(
+                                $"Nieprawidłowe lub brakujące pole: {field}");
+                        }
+                    }
+
+                    var options = task.GetProperty("Opcje");
+
+                    if (options.ValueKind != JsonValueKind.Array ||
+                        options.GetArrayLength() != 4)
+                    {
+                        throw new Exception(
+                            "Każde zadanie musi mieć dokładnie 4 opcje.");
+                    }
+
+                    var optionValues = options
+                        .EnumerateArray()
+                        .Select(x => x.GetString())
+                        .ToList();
+
+                    if (optionValues.Any(
+                        x => string.IsNullOrWhiteSpace(x)))
+                    {
+                        throw new Exception(
+                            "Opcje nie mogą być puste.");
+                    }
+
+                    if (optionValues.Distinct(
+                        StringComparer.OrdinalIgnoreCase).Count() != 4)
+                    {
+                        throw new Exception(
+                            "Opcje odpowiedzi muszą być różne.");
+                    }
+
+                    string correctAnswer = task
+                        .GetProperty("PoprawnaOdpowiedz")
+                        .GetString();
+
+                    if (!optionValues.Contains(
+                        correctAnswer,
+                        StringComparer.Ordinal))
+                    {
+                        throw new Exception(
+                            "Poprawna odpowiedź nie występuje w tablicy Opcje.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(
+                        task.GetProperty("TrescZdania").GetString()) ||
+                        string.IsNullOrWhiteSpace(
+                        task.GetProperty("Wyjasnienie").GetString()))
+                    {
+                        throw new Exception(
+                            "Treść zadania lub wyjaśnienie jest puste.");
+                    }
+                }
+
+                string tasksJson = tasksElement.GetRawText();
+
+                var result =
+                    JsonSerializer.Deserialize<List<ExerciseTaskModel>>(
+                        tasksJson,
+                        JsonOptions);
+
+                if (result == null || result.Count != expectedCount)
+                {
+                    throw new Exception(
+                        "Nie udało się poprawnie odczytać zadań.");
+                }
+
+                return result;
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
-                throw new Exception($"Błąd parsowania JSON zwróconego przez Groq: {ex.Message}. Surowy tekst: {rawText}");
+                throw new Exception(
+                    $"Błąd parsowania JSON z Groq: {ex.Message}\n" +
+                    $"Odpowiedź: {responseString}", ex);
             }
-
-            return new List<ExerciseTaskModel>();
         }
     }
 }
