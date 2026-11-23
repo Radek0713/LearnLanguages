@@ -3015,28 +3015,7 @@ INSERT INTO Gramatyka (id_jezyka, nazwa) VALUES
 
 (1, 'To be'),
 (1, 'There is / There are'),
-(1, 'Have got / Has got'),
-
-(1, 'Articles (a, an, the)'),
-(1, 'Nouns (Countable and Uncountable)'),
-(1, 'Pronouns'),
-(1, 'Adjectives'),
-(1, 'Adverbs'),
-(1, 'Prepositions'),
-(1, 'Conjunctions'),
-
-(1, 'Comparatives and Superlatives'),
-(1, 'Modal Verbs'),
-(1, 'Passive Voice'),
-(1, 'Reported Speech'),
-(1, 'Conditionals (Zero, First, Second, Third)'),
-(1, 'Gerunds and Infinitives'),
-(1, 'Question Forms'),
-(1, 'Negation'),
-(1, 'Relative Clauses'),
-(1, 'Phrasal Verbs'),
-(1, 'Word Order'),
-(1, 'Imperatives');
+(1, 'Have got / Has got');
 
 -- ZMIANA Z PDF NA PNG
 SET SQL_SAFE_UPDATES = 0;
