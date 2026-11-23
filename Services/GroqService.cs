@@ -56,11 +56,13 @@ Zwróć TYLKO I WYŁĄCZNIE czysty kod JSON w formacie: {{ ""tasks"": [ {{}}, {{
             string prompt = $@"
 Jesteś profesjonalnym nauczycielem języka angielskiego. Przygotuj dokładnie {count} różnorodnych zadań testowych typu 'wypełnij lukę' (fill in the blank) z gramatyki w formacie JSON.
 Zagadnienie gramatyczne to: '{grammarTopic}'.
-Zasady:
-1. Zdania ('TrescZdania') oraz wszystkie opcje ('Opcje') muszą być w całości w języku angielskim. Każde zadanie musi posiadać lukę '_____'.
-2. 'Opcje' to tablica 4 stringów (A, B, C, D) po angielsku, gdzie dokładnie jeden jest poprawny, a trzy pozostałe to dystraktory gramatyczne.
-3. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. jeśli poprawna opcja to 'read', wpisz 'read', a NIE literę 'A' ani 'Opcja A').
-4. 'Wyjasnienie' ma być w języku polskim.
+
+Kluczowe zasady dotyczące konstrukcji zdań i odpowiedzi:
+1. Zdania ('TrescZdania') muszą zawierać lukę '_____' w miejscu, które wymaga użycia **pełnej formy czasownika w danym czasie**, co oznacza, że luka **musi wymagać wpisania zarówno operatora/posiłkowego (np. have, had, will, did, do, are), jak i czasownika właściwego** (np. 'had finished', 'have been waiting', 'will go', 'did not see', 'is playing'), a nie tylko pojedynczego słowa.
+2. W nawiasie obok luki możesz podać bezokolicznik czasownika w celach pomocniczych, np. 'By the time we arrived, he _____ (finish) his work.' lub konstruować zdania tak, aby kontekst jednoznacznie wskazywał formę.
+3. Wszystkie opcje w tablicy 'Opcje' (4 stringi: A, B, C, D) muszą być w języku angielskim i mogą składać się z dwóch lub więcej słów (np. 'had finished', 'has finished', 'finished', 'was finishing'). Dokładnie jeden jest poprawny, a pozostałe to typowe dystraktory gramatyczne (błędy w operatorze lub formie).
+4. 'PoprawnaOdpowiedz' MUSI zawierać DOKŁADNY TEKST poprawnej opcji z tablicy 'Opcje' (np. 'had finished').
+5. 'Wyjasnienie' ma być w języku polskim i tłumaczyć, dlaczego użyto takiej formy gramatycznej (w tym operatora i czasownika).
 
 Zwróć obiekt JSON z polem 'tasks' zawierającym tablicę z dokładnie {count} obiektami posiadającymi pola: 'TrescZdania', 'Opcje', 'PoprawnaOdpowiedz', 'Wyjasnienie'.
 Zwróć TYLKO czysty JSON w formacie: {{ ""tasks"": [ {{}}, {{}} ] }} (bez znaczników markdown).";
