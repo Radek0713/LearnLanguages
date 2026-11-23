@@ -1,6 +1,8 @@
 ﻿<Application x:Class="LearnLanguages.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LearnLanguages.ViewModels"
+             xmlns:views="clr-namespace:LearnLanguages.Views.Controls"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -9,6 +11,42 @@
                 <ResourceDictionary Source="Styles/Buttons.xaml"/>
                 <ResourceDictionary Source="Styles/Controls.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type vm:ProfilesViewModel}">
+                <views:Profiles/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:CreateProfileViewModel}">
+                <views:CreateProfileMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:StartMenuViewModel}">
+                <views:StartMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:LanguageMenuViewModel}">
+                <views:LanguageMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:CalendarViewModel}">
+                <views:CalendarMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:TopicsViewModel}">
+                <views:TopicsMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:FlashcardsTopicsViewModel}">
+                <views:FlashcardsTopicsMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:FlashcardsViewModel}">
+                <views:FlashcardsMenu/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:TasksViewModel}">
+                <views:TasksMenu/>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

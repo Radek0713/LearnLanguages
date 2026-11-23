@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace LearnLanguages.Services
 {
-    public static class DatabaseService
+    public class MySqlDatabaseService : IDatabaseService
     {
-        public static MySqlConnection GetConnection()
+        private MySqlConnection GetConnection()
         {
             // Ładowanie pliku .env umieszczonego w głównym folderze
             Env.Load();
@@ -24,12 +24,29 @@ namespace LearnLanguages.Services
 
             return new MySqlConnection(connectionString);
         }
-        public static ProfileModel CurrentProfile { get; set; }
+        public bool TestConnection(out string errorMessage)
+        {
+            try
+            {
+                using (var connection = GetConnection())
+                {
+                    connection.Open();
+                    errorMessage = string.Empty;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
+        }
+        public ProfileModel CurrentProfile { get; set; }
 
-        private static int CurrentProfileId =>
+        private int CurrentProfileId =>
             CurrentProfile?.Id ?? throw new InvalidOperationException("Nie wybrano profilu użytkownika.");
 
-        public static List<ProfileModel> GetProfiles()
+        public List<ProfileModel> GetProfiles()
         {
             var profiles = new List<ProfileModel>();
 
@@ -54,7 +71,7 @@ namespace LearnLanguages.Services
             return profiles;
         }
 
-        public static void CreateProfile(string name)
+        public void CreateProfile(string name)
         {
             using (var connection = GetConnection())
             {
@@ -64,7 +81,7 @@ namespace LearnLanguages.Services
                 cmd.ExecuteNonQuery();
             }
         }
-        public static void DeleteProfile(int profileId)
+        public void DeleteProfile(int profileId)
         {
             using (var connection = GetConnection())
             {
@@ -76,7 +93,7 @@ namespace LearnLanguages.Services
         }
 
         // Pobiera wszystkie działy z bazy
-        public static List<Department> GetDepartments()
+        public List<Department> GetDepartments()
         {
             var departments = new List<Department>();
             using (var connection = GetConnection())
@@ -100,7 +117,7 @@ namespace LearnLanguages.Services
         }
 
         // Pobiera tematy dla konkretnego działu
-        public static List<Topic> GetTopicsByDepartment(int departmentId)
+        public List<Topic> GetTopicsByDepartment(int departmentId)
         {
             var topics = new List<Topic>();
 
@@ -147,7 +164,7 @@ namespace LearnLanguages.Services
         }
 
         // Aktualizuje temat fiszki w bazie na "wybrany"
-        public static void MarkTopicAsSelected(int topicId)
+        public void MarkTopicAsSelected(int topicId)
         {
             using (var connection = GetConnection())
             {
@@ -178,7 +195,7 @@ namespace LearnLanguages.Services
                 cmd2.ExecuteNonQuery();
             }
         }
-        public static void UnmarkTopicAsSelected(int topicId)
+        public void UnmarkTopicAsSelected(int topicId)
         {
             using (var connection = GetConnection())
             {
@@ -195,7 +212,7 @@ namespace LearnLanguages.Services
         }
 
         // Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
-        public static Dictionary<DateTime, int> GetReviewCountsForMonth(int year, int month)
+        public Dictionary<DateTime, int> GetReviewCountsForMonth(int year, int month)
         {
             var result = new Dictionary<DateTime, int>();
             using (var connection = GetConnection())
@@ -239,7 +256,7 @@ namespace LearnLanguages.Services
             }
             return result;
         }
-        public static int GetOverdueReviewCount()
+        public int GetOverdueReviewCount()
         {
             using (var connection = GetConnection())
             {
@@ -260,7 +277,7 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
-        public static int GetReviewCountForToday() // dla funkcji z okienkiem czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
+        public int GetReviewCountForToday() // dla funkcji z okienkiem czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
         {
             using (var connection = GetConnection())
             {
@@ -281,7 +298,7 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
-        public static List<TopicReviewSummary> GetTopicReviewSummariesForToday()
+        public List<TopicReviewSummary> GetTopicReviewSummariesForToday()
         {
             var summaries = new List<TopicReviewSummary>();
 
@@ -330,7 +347,7 @@ namespace LearnLanguages.Services
 
             return summaries;
         }
-        public static int GetUpcomingReviewsCount(int days = 3)
+        public int GetUpcomingReviewsCount(int days = 3)
         {
             using (var connection = GetConnection())
             {
@@ -354,7 +371,7 @@ namespace LearnLanguages.Services
             }
         }
 
-        public static bool HasUnselectedTopics()
+        public bool HasUnselectedTopics()
         {
             using (var connection = GetConnection())
             {
@@ -371,7 +388,7 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
-        public static List<FlashcardModel> GetFlashcardsForToday(int? topicId = null, bool onlyOverdue = false)
+        public List<FlashcardModel> GetFlashcardsForToday(int? topicId = null, bool onlyOverdue = false)
         {
             var flashcards = new List<FlashcardModel>();
 
@@ -446,7 +463,7 @@ namespace LearnLanguages.Services
             }
             return flashcards;
         }
-        public static void UpdateFlashcardProgress(FlashcardModel card, bool isCorrect)
+        public void UpdateFlashcardProgress(FlashcardModel card, bool isCorrect)
         {
             int n = card.Repetitions;
             int interval = card.Interval;
@@ -511,7 +528,7 @@ namespace LearnLanguages.Services
             }
         }
 
-        public static List<string> GetVocabularyWordsByTopic(int topicId)
+        public List<string> GetVocabularyWordsByTopic(int topicId)
         {
             var words = new List<string>();
             using (var connection = GetConnection())
@@ -539,7 +556,7 @@ namespace LearnLanguages.Services
         }
 
         // Pobiera nazwe/opis zagadnienia gramatycznego na podstawie jego ID
-        public static string GetGrammarTopicName(int grammarId)
+        public string GetGrammarTopicName(int grammarId)
         {
             using (var connection = GetConnection())
             {
@@ -551,7 +568,7 @@ namespace LearnLanguages.Services
                 return result?.ToString() ?? string.Empty;
             }
         }
-        public static List<SelectedTopicItem> GetSelectedTopics()
+        public List<SelectedTopicItem> GetSelectedTopics()
         {
             var selectedTopics = new List<SelectedTopicItem>();
 
@@ -589,6 +606,30 @@ namespace LearnLanguages.Services
             }
 
             return selectedTopics;
+        }
+        public List<GrammarModel> GetGrammarTopics()
+        {
+            var list = new List<GrammarModel>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("SELECT id, nazwa FROM gramatyka", connection);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new GrammarModel
+                        {
+                            Id = reader.GetInt32("id"),
+                            Name = reader.GetString("nazwa")
+                        });
+                    }
+                }
+            }
+
+            return list;
         }
     }
 }

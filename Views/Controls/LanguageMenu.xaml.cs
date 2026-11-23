@@ -1,93 +1,12 @@
-﻿using LearnLanguages.Services;
-using LearnLanguages.Views.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
 
 namespace LearnLanguages.Views.Controls
 {
-    /// <summary>
-    /// Logika interakcji dla klasy UserControl1.xaml
-    /// </summary>
     public partial class LanguageMenu : UserControl
     {
         public LanguageMenu()
         {
             InitializeComponent();
-
-            if (DatabaseService.CurrentProfile != null)
-            {
-                TxtProfileName.Text = $"👤 {DatabaseService.CurrentProfile.Name}";
-            }
-        }
-
-        private void btn_calendar_Click(object sender, RoutedEventArgs e)
-        {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.MainContentArea.Content = new CalendarMenu();
-            }
-        }
-
-        private void btn_topics_Click(object sender, RoutedEventArgs e)
-        {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.MainContentArea.Content = new TopicsMenu();
-            }
-        }
-
-        private void btn_flashcards_Click(object sender, RoutedEventArgs e)
-        {
-            int wordsToReviewToday = DatabaseService.GetReviewCountForToday();
-
-            if (wordsToReviewToday == 0)
-            {
-                MessageBox.Show(
-                    "Nie masz na dzisiaj żadnych zaplanowanych fiszek do powtórzenia.\nWybierz nowy temat z zakładki 'Tematy'!",
-                    "Brak słówek na dziś",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
-            }
-            else
-            {
-                var mainWindow = Window.GetWindow(this) as MainWindow;
-                if (mainWindow != null)
-                {
-                    mainWindow.MainContentArea.Content = new FlashcardsTopicsMenu();
-                }
-            }
-        }
-
-        private void btn_tasks_Click(object sender, RoutedEventArgs e)
-        {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.MainContentArea.Content = new TasksMenu();
-            }
-        }
-        private void btn_back_Click(object sender, RoutedEventArgs e)
-        {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.MainContentArea.Content = new StartMenu();
-            }
         }
     }
 }

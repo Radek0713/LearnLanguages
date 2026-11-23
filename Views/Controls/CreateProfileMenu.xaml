@@ -88,27 +88,27 @@
                            Margin="2,0,0,6"/>
 
                 <TextBox x:Name="TxtProfileName"
-                         Style="{StaticResource ModernTextBoxStyle}"
-                         MaxLength="50"
-                         Margin="0,0,0,20"
-                         KeyDown="TxtProfileName_KeyDown"/>
+                        Style="{StaticResource ModernTextBoxStyle}"
+                        MaxLength="50"
+                        Margin="0,0,0,20"
+                        Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SaveProfileCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
-                <!-- Zielony przycisk Dodaj profil -->
-                <Button x:Name="BtnAddProfile"
-                        Content="Dodaj profil"
+                <Button Content="Dodaj profil"
                         Style="{StaticResource GreenSuccessButtonStyle}"
                         Height="48"
                         FontSize="15"
                         Margin="0,0,0,12"
-                        Click="BtnAddProfile_Click"/>
+                        Command="{Binding SaveProfileCommand}"/>
 
-                <!-- Szary przycisk Wróć -->
-                <Button x:Name="BtnBack"
-                        Content="Wróć"
+                <Button Content="Wróć"
                         Style="{StaticResource BackButtonStyle}"
                         Height="46"
                         FontSize="15"
-                        Click="BtnBack_Click"/>
+                        Command="{Binding CancelCommand}"/>
             </StackPanel>
         </Border>
     </Grid>

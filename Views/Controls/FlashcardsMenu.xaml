@@ -17,12 +17,12 @@
 
             <StackPanel Grid.Row="0" Margin="0,0,0,10" HorizontalAlignment="Center">
                 <TextBlock Text="Nauka: Fiszki" FontSize="24" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
-                <TextBlock x:Name="TxtTopicInfo" Text="Dział • Temat" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding TopicInfoText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                    <TextBlock x:Name="TxtProgress" Text="Karta 1 z 1" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBlueBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding ProgressText}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBlueBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
-                    <ProgressBar x:Name="SessionProgressBar" Width="160" Height="8" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center">
+                    <ProgressBar Width="160" Height="8" Minimum="0" Maximum="{Binding TotalCardsCount}" Value="{Binding CurrentCardNumber}" VerticalAlignment="Center">
                         <ProgressBar.Template>
                             <ControlTemplate TargetType="ProgressBar">
                                 <Border Background="{StaticResource CardBorderBrush}" CornerRadius="4">
@@ -36,7 +36,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Główna strefa fiszki (bez zmian w wymiarach i przycinaniu) -->
+            <!-- Główna strefa fiszki -->
             <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="2" CornerRadius="5"
                     Background="White" Width="350" Height="350" Padding="4">
                 <Border.Effect>
@@ -44,7 +44,18 @@
                 </Border.Effect>
 
                 <Grid>
-                    <Grid x:Name="FlashcardFront" Visibility="Visible">
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+
                         <TextBlock Text="[Brak grafiki Awersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -58,14 +69,25 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <Image x:Name="ImgFront" Stretch="Uniform">
+                        <Image x:Name="ImgFront" Source="{Binding FrontImage}" Stretch="Uniform">
                             <Image.Clip>
                                 <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
                             </Image.Clip>
                         </Image>
                     </Grid>
 
-                    <Grid x:Name="FlashcardBack" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+
                         <TextBlock Text="[Brak grafiki Rewersu]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -79,7 +101,7 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <Image x:Name="ImgBack" Stretch="Uniform">
+                        <Image x:Name="ImgBack" Source="{Binding BackImage}" Stretch="Uniform">
                             <Image.Clip>
                                 <RectangleGeometry Rect="20,35,280,280" RadiusX="20" RadiusY="20"/>
                             </Image.Clip>
@@ -90,28 +112,49 @@
 
             <!-- Przyciski akcji -->
             <Grid Grid.Row="2" Margin="0,14,0,8" HorizontalAlignment="Center">
-                <Button x:Name="BtnFlip" Content="Obróć fiszkę"
-                        Style="{StaticResource BaseModernButtonStyle}"
+                <Button Content="Obróć fiszkę"
                         FontSize="16" Height="46" Padding="32,0"
                         Background="CornflowerBlue"
-                        Click="BtnFlip_Click"/>
+                        Command="{Binding FlipCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource BaseModernButtonStyle}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
-                <StackPanel x:Name="EvaluationButtons" Orientation="Horizontal" Visibility="Collapsed">
-                    <Button x:Name="BtnBad" Content="Źle"
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Button Content="Źle"
                             Style="{StaticResource BaseModernButtonStyle}"
                             FontSize="16" Height="46" MinWidth="120"
                             Background="IndianRed" Margin="0,0,20,0"
-                            Click="BtnBad_Click"/>
+                            Command="{Binding MarkBadCommand}"/>
 
-                    <Button x:Name="BtnGood" Content="Dobrze"
+                    <Button Content="Dobrze"
                             Style="{StaticResource BaseModernButtonStyle}"
                             FontSize="16" Height="46" MinWidth="120"
                             Background="MediumSeaGreen"
-                            Click="BtnGood_Click"/>
+                            Command="{Binding MarkGoodCommand}"/>
                 </StackPanel>
             </Grid>
 
-            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="42" Padding="24,0" HorizontalAlignment="Left" Click="Btn_Back_Click"/>
+            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="42" Padding="24,0" HorizontalAlignment="Left" Command="{Binding BackCommand}"/>
         </Grid>
     </Border>
 </UserControl>

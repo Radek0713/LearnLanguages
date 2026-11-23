@@ -24,25 +24,33 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="BtnPrevMonth" Content="&lt; Poprzedni" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Click="Btn_PrevMonth_Click" Grid.Column="0" HorizontalAlignment="Left"/>
+                <Button Content="&lt; Poprzedni" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Command="{Binding PrevMonthCommand}" Grid.Column="0" HorizontalAlignment="Left"/>
 
-                <TextBlock x:Name="TxtMonthYear" Grid.Column="1" Text="Czerwiec 2026"
+                <TextBlock Grid.Column="1" Text="{Binding MonthYearText}"
                            FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="Segoe UI"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                <Button Grid.Column="2" Content="Następny &gt;" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Click="Btn_NextMonth_Click" HorizontalAlignment="Right"/>
+                <Button Grid.Column="2" Content="Następny &gt;" Style="{StaticResource PrimaryButtonStyle}" Height="38" FontSize="13" Padding="14,0" Width="105" Command="{Binding NextMonthCommand}" HorizontalAlignment="Right"/>
             </Grid>
 
             <!-- Pomarańczowy baner sugestii nowych zestawów (widoczny przy < 10 fiszkach na najbliższe 3 dni) -->
-            <Border x:Name="LowReviewsBanner"
-                    Grid.Row="1"
-                    Background="{StaticResource SoftOrangeBackgroundBrush}"
-                    BorderBrush="{StaticResource SoftOrangeBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="14,10"
-                    Margin="0,0,0,14"
-                    Visibility="Collapsed">
+            <Border Grid.Row="1"
+        Background="{StaticResource SoftOrangeBackgroundBrush}"
+        BorderBrush="{StaticResource SoftOrangeBorderBrush}"
+        BorderThickness="1"
+        CornerRadius="12"
+        Padding="14,10"
+        Margin="0,0,0,14">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowLowReviewsBanner}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -51,26 +59,24 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TxtLowReviewsMessage"
-                                   Text="Masz tylko 0 fiszek zaplanowanych na najbliższe 3 dni. Dodaj nowy zestaw, aby utrzymać tempo nauki."
-                                   FontFamily="Segoe UI"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource DarkOrangeTextBrush}"
-                                   TextWrapping="Wrap"
-                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding LowReviewsMessage}"
+                       FontFamily="Segoe UI"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource DarkOrangeTextBrush}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <Button x:Name="BtnGoToTopics"
-                            Grid.Column="1"
-                            Content="Dodaj zestaw"
-                            Style="{StaticResource WarningButtonStyle}"
-                            Height="34"
-                            FontSize="12.5"
-                            Padding="14,0"
-                            Margin="14,0,0,0"
-                            VerticalAlignment="Center"
-                            Click="BtnGoToTopics_Click"/>
+                    <Button Grid.Column="1"
+                Content="Dodaj zestaw"
+                Style="{StaticResource WarningButtonStyle}"
+                Height="34"
+                FontSize="12.5"
+                Padding="14,0"
+                Margin="14,0,0,0"
+                VerticalAlignment="Center"
+                Command="{Binding GoToTopicsCommand}"/>
                 </Grid>
             </Border>
 
@@ -86,7 +92,7 @@
             </UniformGrid>
 
             <!-- Siatka dni kalendarza -->
-            <ItemsControl x:Name="CalendarItemsControl" Grid.Row="3">
+            <ItemsControl ItemsSource="{Binding Days}" Grid.Row="3">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="7" Rows="6"/>
@@ -170,7 +176,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Button Grid.Row="4" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" Width="101" HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click"/>
+            <Button Grid.Row="4" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" Width="101" HorizontalAlignment="Left" Margin="0,12,0,0" Command="{Binding BackCommand}"/>
         </Grid>
     </Border>
 </UserControl>

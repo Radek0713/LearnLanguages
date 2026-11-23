@@ -23,12 +23,23 @@
             <!-- Górny pasek: Aktualnie wybrane tematy do nauki -->
             <Border Grid.Row="1" Style="{StaticResource SubCardBorderStyle}" Padding="14,10" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock x:Name="TxtSelectedHeader" Text="Aktualnie wybrane tematy (0):" FontSize="12" FontWeight="Bold" Foreground="#475569" FontFamily="Segoe UI" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding SelectedHeader}" FontSize="12" FontWeight="Bold" Foreground="#475569" FontFamily="Segoe UI" Margin="0,0,0,8"/>
 
-                    <TextBlock x:Name="TxtNoSelectedTopics" Text="Nie wybrano jeszcze żadnych tematów do nauki." FontSize="13" FontStyle="Italic" Foreground="{StaticResource TextLightMutedBrush}" FontFamily="Segoe UI" Visibility="Visible"/>
+                    <TextBlock Text="Nie wybrano jeszcze żadnych tematów do nauki." FontSize="13" FontStyle="Italic" Foreground="{StaticResource TextLightMutedBrush}" FontFamily="Segoe UI">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasNoSelectedTopics}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
 
                     <ScrollViewer MaxHeight="74" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="SelectedTopicsItemsControl">
+                        <ItemsControl ItemsSource="{Binding SelectedTopics}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal"/>
@@ -66,12 +77,12 @@
                     <TextBlock Text="DZIAŁY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" Margin="4,0,0,6"/>
 
                     <Border Grid.Row="1" Style="{StaticResource SubCardBorderStyle}" Padding="8">
-                        <ListBox x:Name="DepartmentsListBox"
+                        <ListBox ItemsSource="{Binding Departments}"
+                                 SelectedItem="{Binding SelectedDepartment}"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  DisplayMemberPath="Name"
-                                 ItemContainerStyle="{StaticResource DepartmentListBoxItemStyle}"
-                                 SelectionChanged="DepartmentsListBox_SelectionChanged"/>
+                                 ItemContainerStyle="{StaticResource DepartmentListBoxItemStyle}"/>
                     </Border>
                 </Grid>
 
@@ -84,7 +95,7 @@
                     <TextBlock Text="TEMATY W DZIALE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" Margin="4,0,0,6"/>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
-                        <ItemsControl x:Name="TopicsItemsControl">
+                        <ItemsControl ItemsSource="{Binding Topics}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource SubCardBorderStyle}" BorderThickness="1.2" CornerRadius="12" Padding="14,10" Margin="0,0,0,8">
@@ -96,7 +107,10 @@
 
                                             <TextBlock Text="{Binding DisplayName}" FontFamily="Segoe UI" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" TextWrapping="Wrap"/>
 
-                                            <Button Grid.Column="1" Tag="{Binding}" Click="AddTopic_Click" Height="34" MinWidth="122" Padding="12,0">
+                                            <Button Grid.Column="1"
+                                                    Command="{Binding DataContext.ToggleTopicCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Height="34" MinWidth="122" Padding="12,0">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource BaseModernButtonStyle}">
                                                         <Setter Property="Content" Value="+ Dodaj do nauki"/>
@@ -124,7 +138,7 @@
                 </Grid>
             </Grid>
 
-            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" HorizontalAlignment="Left" Margin="0,14,0,0" Click="Btn_Back_Click"/>
+            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding BackCommand}"/>
         </Grid>
     </Border>
 </UserControl>

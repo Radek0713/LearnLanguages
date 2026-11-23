@@ -14,7 +14,7 @@
         WindowStartupLocation="CenterScreen"
         Background="#334155">
     <Grid>
-        <ContentControl x:Name="MainContentArea"
+        <ContentControl Content="{Binding CurrentViewModel}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Margin="0"/>

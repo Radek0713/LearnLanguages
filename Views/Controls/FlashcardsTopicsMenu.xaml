@@ -58,20 +58,22 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="BtnReviewAll" Grid.Column="0" Style="{StaticResource PrimaryButtonStyle}" Click="BtnReviewAll_Click">
-                    <TextBlock x:Name="TxtReviewAll" Text="Powtórz wszystkie (0)"/>
+                <Button Grid.Column="0" Style="{StaticResource PrimaryButtonStyle}" IsEnabled="{Binding CanReviewAll}" Command="{Binding ReviewAllCommand}">
+                    <TextBlock Text="{Binding ReviewAllText}"/>
                 </Button>
 
-                <Button x:Name="BtnReviewOverdue" Grid.Column="2" Style="{StaticResource WarningButtonStyle}" Click="BtnReviewOverdue_Click">
-                    <TextBlock x:Name="TxtReviewOverdue" Text="Tylko zaległe (0)"/>
+                <Button Grid.Column="2" Style="{StaticResource WarningButtonStyle}" IsEnabled="{Binding CanReviewOverdue}" Command="{Binding ReviewOverdueCommand}">
+                    <TextBlock Text="{Binding ReviewOverdueText}"/>
                 </Button>
             </Grid>
 
             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
-                <ItemsControl x:Name="TopicsItemsControl">
+                <ItemsControl ItemsSource="{Binding Topics}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Style="{StaticResource TopicCardButtonStyle}" Click="BtnTopicCard_Click">
+                            <Button Style="{StaticResource TopicCardButtonStyle}"
+                                    Command="{Binding DataContext.SelectTopicCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -125,7 +127,7 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" HorizontalAlignment="Left" Margin="0,12,0,0" Click="Btn_Back_Click"/>
+            <Button Grid.Row="3" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="38" FontSize="13" HorizontalAlignment="Left" Margin="0,12,0,0" Command="{Binding BackCommand}"/>
         </Grid>
     </Border>
 </UserControl>

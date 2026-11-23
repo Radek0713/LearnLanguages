@@ -13,9 +13,10 @@ using LearnLanguages.Models;
 
 namespace LearnLanguages.Services
 {
-    public static class GroqService
+    public class GroqService : ILLMService
     {
         private static readonly HttpClient httpClient;
+        private readonly IDatabaseService _databaseService;
 
         private const string Model = "openai/gpt-oss-20b";
 
@@ -35,12 +36,16 @@ namespace LearnLanguages.Services
                 Timeout = TimeSpan.FromSeconds(60)
             };
         }
+        public GroqService(IDatabaseService databaseService)
+        {
+            _databaseService = databaseService ?? throw new ArgumentNullException(nameof(databaseService));
+        }
 
         // =====================================================
         // GENEROWANIE ZADAŃ ZE SŁÓWEK
         // =====================================================
 
-        public static async Task<List<ExerciseTaskModel>>
+        public async Task<List<ExerciseTaskModel>>
             GenerateBatchTasksForWordsAsync(
                 List<string> words,
                 int count = 5)
@@ -149,7 +154,7 @@ Zwróć obiekt zawierający pole tasks z dokładnie {selectedWords.Count} zadani
         // GENEROWANIE ZADAŃ GRAMATYCZNYCH
         // =====================================================
 
-        public static async Task<List<ExerciseTaskModel>>
+        public async Task<List<ExerciseTaskModel>>
             GenerateGrammarTasksAsync(
                 int grammarId,
                 int count = 5)
@@ -159,7 +164,7 @@ Zwróć obiekt zawierający pole tasks z dokładnie {selectedWords.Count} zadani
                     "Liczba zadań musi być większa od zera.");
 
             string grammarTopic =
-                DatabaseService.GetGrammarTopicName(grammarId);
+                _databaseService.GetGrammarTopicName(grammarId);
 
             if (string.IsNullOrWhiteSpace(grammarTopic))
                 return new List<ExerciseTaskModel>();
@@ -640,7 +645,7 @@ Zwróć dokładnie {count} różnych zadań.";
         // KOMUNIKACJA Z GROQ API + AUTOMATYCZNE PONAWIANIE
         // =====================================================
 
-        private static async Task<List<ExerciseTaskModel>>
+        private async Task<List<ExerciseTaskModel>>
             CallGroqApiAsync(string prompt, int expectedCount)
         {
             Env.Load();

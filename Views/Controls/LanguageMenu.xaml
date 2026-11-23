@@ -23,45 +23,44 @@
                 VerticalAlignment="Center">
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Margin="0,0,0,14" HorizontalAlignment="Center">
-                    <TextBlock x:Name="TxtProfileName" 
-               Text="👤 Profil" 
-               Style="{StaticResource PageTitleTextStyle}" 
-               HorizontalAlignment="Center" 
-               Margin="0,0,0,6"/>
+                    <TextBlock Text="{Binding ProfileDisplayName}" 
+                               Style="{StaticResource PageTitleTextStyle}" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,6"/>
                     <TextBlock Text="Wybierz sekcję, aby kontynuować naukę" 
-               Style="{StaticResource PageSubtitleTextStyle}" 
-               HorizontalAlignment="Center"/>
+                               Style="{StaticResource PageSubtitleTextStyle}" 
+                               HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <Button x:Name="btn_calendar" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_calendar_Click">
+                <Button x:Name="btn_calendar" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Command="{Binding OpenCalendarCommand}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         <TextBlock Text="Kalendarz" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_topics" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_topics_Click">
+                <Button x:Name="btn_topics" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Command="{Binding OpenTopicsCommand}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📚" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         <TextBlock Text="Tematy" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_flashcards" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_flashcards_Click">
+                <Button x:Name="btn_flashcards" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Command="{Binding OpenFlashcardsCommand}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         <TextBlock Text="Fiszki" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_tasks" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Click="btn_tasks_Click">
+                <Button x:Name="btn_tasks" Style="{StaticResource PrimaryButtonStyle}" Height="52" FontSize="15" Margin="0,8" Command="{Binding OpenTasksCommand}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         <TextBlock Text="Zadania" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <Button x:Name="btn_back" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="52" FontSize="15" Margin="0,10,0,0" Click="btn_back_Click"/>
+                <Button x:Name="btn_back" Content="Wróć" Style="{StaticResource BackButtonStyle}" Height="52" FontSize="15" Margin="0,10,0,0" Command="{Binding BackCommand}"/>
             </StackPanel>
         </Border>
     </Grid>
