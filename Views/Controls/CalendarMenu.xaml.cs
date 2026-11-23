@@ -35,12 +35,10 @@ namespace LearnLanguages.Views.Controls
         {
             DateTime today = DateTime.Today;
 
-            // Blokujemy przycisk "< Poprzedni", jeśli oglądamy bieżący (lub wcześniejszy) miesiąc
             bool isCurrentOrPastMonth = (_currentDate.Year < today.Year) ||
                                         (_currentDate.Year == today.Year && _currentDate.Month <= today.Month);
             BtnPrevMonth.IsEnabled = !isCurrentOrPastMonth;
 
-            // Zaktualizuj napis na górze, np. "Listopad 2026"
             string rawMonthYear = _currentDate.ToString("MMMM yyyy");
             TxtMonthYear.Text = char.ToUpper(rawMonthYear[0]) + rawMonthYear.Substring(1);
 
@@ -89,7 +87,7 @@ namespace LearnLanguages.Views.Controls
             DateTime today = DateTime.Today;
             if (_currentDate.Year == today.Year && _currentDate.Month <= today.Month)
             {
-                return; // Dodatkowe zabezpieczenie przed cofnięciem do przeszłych miesięcy
+                return;
             }
 
             _currentDate = _currentDate.AddMonths(-1);
