@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -8,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Reflection;
 using DotNetEnv;
 using LearnLanguages.Models;
 
@@ -648,12 +648,13 @@ Zwróć dokładnie {count} różnych zadań.";
         private async Task<List<ExerciseTaskModel>>
             CallGroqApiAsync(string prompt, int expectedCount)
         {
-            Env.Load();
+            string apiKey = GetGroqApiKey();
 
-            string apiKey = Environment
-                .GetEnvironmentVariable("GROQ_API_KEY")
-                ?.Trim()
-                .Trim('"', '\'');
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new Exception(
+                    "Brak klucza GROQ_API_KEY (nie znaleziono ani w pliku .env, ani w zasobach aplikacji).");
+            }
 
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -876,6 +877,27 @@ OBOWIĄZKOWO:
 
             throw new Exception(
                 "Nie udało się wygenerować poprawnych zadań.");
+        }
+        private static string GetGroqApiKey()
+        {
+            Env.TraversePath().Load();
+
+            string apiKey = Environment
+                .GetEnvironmentVariable("GROQ_API_KEY")
+                ?.Trim()
+                .Trim('"', '\'');
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                return apiKey;
+            }
+
+            var embeddedAttr = Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == "EmbeddedGroqKey");
+
+            return embeddedAttr?.Value?.Trim().Trim('"', '\'');
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using LearnLanguages.ViewModels.Base;
 using MySql.Data.MySqlClient;
+using Microsoft.Data.Sqlite;
 
 namespace LearnLanguages.ViewModels
 {
@@ -52,6 +53,12 @@ namespace LearnLanguages.ViewModels
                 _mainViewModel.NavigateTo(new ProfilesViewModel(_mainViewModel));
             }
             catch (MySqlException ex) when (ex.Number == 1062)
+            {
+                _mainViewModel.DialogService.ShowWarning(
+                    "Profil o takiej nazwie już istnieje. Wybierz inną nazwę.",
+                    "Duplikat nazwy");
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
             {
                 _mainViewModel.DialogService.ShowWarning(
                     "Profil o takiej nazwie już istnieje. Wybierz inną nazwę.",

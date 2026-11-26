@@ -33,7 +33,7 @@ namespace LearnLanguages.ViewModels
 
         public MainViewModel()
         {
-            DatabaseService = new MySqlDatabaseService();
+            DatabaseService = new SqliteDatabaseService();
             LLMService = new GroqService(DatabaseService);
             DialogService = new DialogService();
 

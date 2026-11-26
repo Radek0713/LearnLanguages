@@ -132,7 +132,7 @@ namespace LearnLanguages.ViewModels
             TopicInfoText = $"{_currentFlashcard.CategoryName} • {_currentFlashcard.TopicName}";
             ProgressText = $"Karta {CurrentCardNumber} z {TotalCardsCount}";
 
-            string basePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data"));
+            string basePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data"));
             string polPath = Path.Combine(basePath, _currentFlashcard.CategoryName, _currentFlashcard.TopicName, "POL", _currentFlashcard.PolImageName);
             string engPath = Path.Combine(basePath, _currentFlashcard.CategoryName, _currentFlashcard.TopicName, "ENG", _currentFlashcard.EngImageName);
 
