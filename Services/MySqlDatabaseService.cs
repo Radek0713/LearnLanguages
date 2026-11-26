@@ -9,6 +9,8 @@ namespace LearnLanguages.Services
 {
     public class MySqlDatabaseService : IDatabaseService
     {
+        public ProfileModel CurrentProfile { get; set; }
+        private int CurrentProfileId => CurrentProfile?.Id ?? throw new InvalidOperationException("Nie wybrano profilu użytkownika.");
         private MySqlConnection GetConnection()
         {
             // Ładowanie pliku .env umieszczonego w głównym folderze
@@ -40,11 +42,7 @@ namespace LearnLanguages.Services
                 errorMessage = ex.Message;
                 return false;
             }
-        }
-        public ProfileModel CurrentProfile { get; set; }
-
-        private int CurrentProfileId =>
-            CurrentProfile?.Id ?? throw new InvalidOperationException("Nie wybrano profilu użytkownika.");
+        }        
 
         public List<ProfileModel> GetProfiles()
         {
@@ -67,7 +65,6 @@ namespace LearnLanguages.Services
                     }
                 }
             }
-
             return profiles;
         }
 
@@ -159,7 +156,6 @@ namespace LearnLanguages.Services
                     }
                 }
             }
-
             return topics;
         }
 
@@ -209,6 +205,44 @@ namespace LearnLanguages.Services
                 cmd.Parameters.AddWithValue("@topicId", topicId);
                 cmd.ExecuteNonQuery();
             }
+        }
+        public List<SelectedTopicItem> GetSelectedTopics()
+        {
+            var selectedTopics = new List<SelectedTopicItem>();
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                string query = @"
+            SELECT 
+                tem.id AS TopicId,
+                dz.nazwa AS CategoryName,
+                tem.nazwa AS TopicName
+            FROM profil_temat pt
+            JOIN temat tem ON pt.id_tematu = tem.id
+            JOIN dzial dz ON tem.id_dzialu = dz.id
+            WHERE pt.id_profilu = @profileId 
+                AND pt.czy_wybrany = 1
+            ORDER BY dz.nazwa ASC, tem.nazwa ASC";
+
+                var cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        selectedTopics.Add(new SelectedTopicItem
+                        {
+                            TopicId = reader.GetInt32("TopicId"),
+                            CategoryName = reader.GetString("CategoryName"),
+                            TopicName = reader.GetString("TopicName")
+                        });
+                    }
+                }
+            }
+            return selectedTopics;
         }
 
         // Pobiera liczby zaplanowanych powtórek na dany miesiąc i rok
@@ -277,7 +311,8 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
-        public int GetReviewCountForToday() // dla funkcji z okienkiem czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
+        // sprawdza czy można otworzyć menu Flashcards czy mamy jakieś fiszki na dzisiaj
+        public int GetReviewCountForToday()
         {
             using (var connection = GetConnection())
             {
@@ -298,6 +333,47 @@ namespace LearnLanguages.Services
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
+        public int GetUpcomingReviewsCount(int days = 3)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*) 
+            FROM profil_postep pp
+            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
+            JOIN slowko s ON t.id_slowka = s.id
+            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
+            WHERE pp.id_profilu = @profileId
+              AND pt.czy_wybrany = 1
+              AND DATE(pp.data_nastepnej_powtorki) <= DATE_ADD(CURDATE(), INTERVAL @daysOffset DAY)
+              AND t.id_jezyka = 1", connection);
+
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+                cmd.Parameters.AddWithValue("@daysOffset", days - 1);
+
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
+        public bool HasUnselectedTopics()
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                var cmd = new MySqlCommand(@"
+            SELECT COUNT(*)
+            FROM temat tem
+            LEFT JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = @profileId
+            WHERE COALESCE(pt.czy_wybrany, 0) = 0", connection);
+
+                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
+
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+            }
+        }
+
         public List<TopicReviewSummary> GetTopicReviewSummariesForToday()
         {
             var summaries = new List<TopicReviewSummary>();
@@ -344,50 +420,8 @@ namespace LearnLanguages.Services
                     }
                 }
             }
-
             return summaries;
-        }
-        public int GetUpcomingReviewsCount(int days = 3)
-        {
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                var cmd = new MySqlCommand(@"
-            SELECT COUNT(*) 
-            FROM profil_postep pp
-            JOIN tlumaczenie t ON pp.id_tlumaczenia = t.id
-            JOIN slowko s ON t.id_slowka = s.id
-            JOIN profil_temat pt ON pt.id_tematu = s.id_tematu AND pt.id_profilu = pp.id_profilu
-            WHERE pp.id_profilu = @profileId
-              AND pt.czy_wybrany = 1
-              AND DATE(pp.data_nastepnej_powtorki) <= DATE_ADD(CURDATE(), INTERVAL @daysOffset DAY)
-              AND t.id_jezyka = 1", connection);
-
-                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
-                cmd.Parameters.AddWithValue("@daysOffset", days - 1);
-
-                return Convert.ToInt32(cmd.ExecuteScalar());
-            }
-        }
-
-        public bool HasUnselectedTopics()
-        {
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                var cmd = new MySqlCommand(@"
-            SELECT COUNT(*)
-            FROM temat tem
-            LEFT JOIN profil_temat pt ON pt.id_tematu = tem.id AND pt.id_profilu = @profileId
-            WHERE COALESCE(pt.czy_wybrany, 0) = 0", connection);
-
-                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
-
-                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
-            }
-        }
+        }        
         public List<FlashcardModel> GetFlashcardsForToday(int? topicId = null, bool onlyOverdue = false)
         {
             var flashcards = new List<FlashcardModel>();
@@ -554,7 +588,6 @@ namespace LearnLanguages.Services
             }
             return words;
         }
-
         // Pobiera nazwe/opis zagadnienia gramatycznego na podstawie jego ID
         public string GetGrammarTopicName(int grammarId)
         {
@@ -567,46 +600,7 @@ namespace LearnLanguages.Services
                 var result = command.ExecuteScalar();
                 return result?.ToString() ?? string.Empty;
             }
-        }
-        public List<SelectedTopicItem> GetSelectedTopics()
-        {
-            var selectedTopics = new List<SelectedTopicItem>();
-
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                string query = @"
-            SELECT 
-                tem.id AS TopicId,
-                dz.nazwa AS CategoryName,
-                tem.nazwa AS TopicName
-            FROM profil_temat pt
-            JOIN temat tem ON pt.id_tematu = tem.id
-            JOIN dzial dz ON tem.id_dzialu = dz.id
-            WHERE pt.id_profilu = @profileId 
-                AND pt.czy_wybrany = 1
-            ORDER BY dz.nazwa ASC, tem.nazwa ASC";
-
-                var cmd = new MySqlCommand(query, connection);
-                cmd.Parameters.AddWithValue("@profileId", CurrentProfileId);
-
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        selectedTopics.Add(new SelectedTopicItem
-                        {
-                            TopicId = reader.GetInt32("TopicId"),
-                            CategoryName = reader.GetString("CategoryName"),
-                            TopicName = reader.GetString("TopicName")
-                        });
-                    }
-                }
-            }
-
-            return selectedTopics;
-        }
+        }        
         public List<GrammarModel> GetGrammarTopics()
         {
             var list = new List<GrammarModel>();
@@ -628,7 +622,6 @@ namespace LearnLanguages.Services
                     }
                 }
             }
-
             return list;
         }
     }

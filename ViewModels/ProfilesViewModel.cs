@@ -12,6 +12,7 @@ namespace LearnLanguages.ViewModels
 
         public ObservableCollection<ProfileModel> Profiles { get; }
         public bool HasNoProfiles => Profiles.Count == 0;
+        private const int MaxProfilesCount = 5;
 
         public ICommand SelectProfileCommand { get; }
         public ICommand CreateNewProfileCommand { get; }
@@ -23,8 +24,7 @@ namespace LearnLanguages.ViewModels
             Profiles = new ObservableCollection<ProfileModel>(_mainViewModel.DatabaseService.GetProfiles());
 
             SelectProfileCommand = new RelayCommand(SelectProfile);
-            CreateNewProfileCommand = new RelayCommand(() =>
-                _mainViewModel.NavigateTo(new CreateProfileViewModel(_mainViewModel)));
+            CreateNewProfileCommand = new RelayCommand(CreateNewProfile);
             ExitAppCommand = new RelayCommand(ExitApp);
         }
 
@@ -35,6 +35,18 @@ namespace LearnLanguages.ViewModels
                 _mainViewModel.CurrentProfile = selectedProfile;
                 _mainViewModel.NavigateTo(new StartMenuViewModel(_mainViewModel));
             }
+        }
+        private void CreateNewProfile()
+        {
+            if (Profiles.Count >= MaxProfilesCount)
+            {
+                _mainViewModel.DialogService.ShowInfo(
+                    $"Osiągnięto maksymalną liczbę profili ({MaxProfilesCount}). Usuń jeden z istniejących profili, aby utworzyć nowy.",
+                    "Limit profili");
+                return;
+            }
+
+            _mainViewModel.NavigateTo(new CreateProfileViewModel(_mainViewModel));
         }
 
         private void ExitApp()

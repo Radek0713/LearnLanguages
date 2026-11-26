@@ -45,7 +45,8 @@ namespace LearnLanguages.ViewModels
         {
             if (DatabaseService.TestConnection(out string errorMessage))
             {
-                DialogService.ShowInfo("✅ Połączono z bazą danych!", "Sukces");
+                // nie ma potrzeby wyświetlać jeśli połączono z bazą
+                //DialogService.ShowInfo("✅ Połączono z bazą danych!", "Sukces");
             }
             else
             {

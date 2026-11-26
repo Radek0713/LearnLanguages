@@ -41,6 +41,13 @@ namespace LearnLanguages.ViewModels
 
             try
             {
+                if (_mainViewModel.DatabaseService.GetProfiles().Count >= 5)
+                {
+                    _mainViewModel.DialogService.ShowInfo(
+                        "Osiągnięto maksymalną liczbę profili (5). Usuń jeden z istniejących profili, aby utworzyć nowy.",
+                        "Limit profili");
+                    return;
+                }
                 _mainViewModel.DatabaseService.CreateProfile(trimmedName);
                 _mainViewModel.NavigateTo(new ProfilesViewModel(_mainViewModel));
             }
